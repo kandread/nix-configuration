@@ -1,4 +1,4 @@
-# nixos-config
+# NixOS & Nix-Darwin Dendritic Configuration
 
 A dendritic NixOS configuration using [den](https://den.denful.dev/), an aspect-oriented framework for composable, cross-platform Nix configurations.
 
