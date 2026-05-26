@@ -136,3 +136,5 @@ nixos-rebuild build --flake .#
 # Check evaluation
 nix flake check
 ```
+
+*Disclaimer*: The README file was generated using an LLM, the code was written the old-fashioned way: ~stealing~ inspired by others' configurations.
