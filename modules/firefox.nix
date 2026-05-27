@@ -25,6 +25,7 @@
             # Distraction-free UI
             sponsorblock          # skip sponsored segments in YouTube videos
             darkreader            # dark mode everywhere
+            tridactyl
 
             # Utilities
             proton-pass             # password manager
