@@ -19,6 +19,7 @@
     den.aspects.media
     den.aspects.gpg
     den.aspects.firefox
+    den.aspects.science
     ];
 
     user = { ... }: {
