@@ -13,6 +13,11 @@
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
     ];
   };
+  den.default.nixos.nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
   den.default.includes = [
     den.aspects.fonts
     den.aspects.tailscale
@@ -20,15 +25,15 @@
     den.aspects.networking
     den.aspects.locale
     den.aspects.sops
-    (den.batteries.unfree [ 
-	"zoom" 
-	"joypixels" 
-	"claude-code" 
-	"broadcom-bt-firmware" 
-	"b43-firmware" 
-	"xone-dongle-firmware"
-	"facetimehd-calibration"
-	"facetimehd-firmware" ])
+    (den.batteries.unfree [
+  "zoom"
+  "joypixels"
+  "claude-code"
+  "broadcom-bt-firmware"
+  "b43-firmware"
+  "xone-dongle-firmware"
+  "facetimehd-calibration"
+  "facetimehd-firmware" ])
     den.batteries.define-user
   ];
 }
