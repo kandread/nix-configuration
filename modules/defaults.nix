@@ -1,7 +1,9 @@
 { lib, den, ... }:
 {
   den.default.nixos.system.stateVersion = "25.11";
+  den.default.nixos.nixpkgs.overlays = [ inputs.nur.overlays.default ];
   den.default.homeManager.home.stateVersion = "25.11";
+  den.default.homeManager.nixpkgs.overlays = [ inputs.nur.overlays.default ];
   den.schema.user.classes = lib.mkDefault [ "homeManager" ];
   den.default.nixos.nix.settings = {
     sandbox = "relaxed";
@@ -18,7 +20,15 @@
     den.aspects.networking
     den.aspects.locale
     den.aspects.sops
-    (den.batteries.unfree [ "zoom" "joypixels" "claude-code" ])
+    (den.batteries.unfree [ 
+	"zoom" 
+	"joypixels" 
+	"claude-code" 
+	"broadcom-bt-firmware" 
+	"b43-firmware" 
+	"xone-dongle-firmware"
+	"facetimehd-calibration"
+	"facetimehd-firmware" ])
     den.batteries.define-user
   ];
 }
