@@ -18,6 +18,7 @@
     den.aspects.pdf
     den.aspects.media
     den.aspects.gpg
+    den.aspects.firefox
     ];
 
     user = { ... }: {

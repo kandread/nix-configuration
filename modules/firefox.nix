@@ -4,9 +4,10 @@
     nixos = { ... }: {
       programs.firefox.enable = true;
     };
-    homeManager = { pkgs, ... }: {
+    homeManager = { pkgs, config, ... }: {
       programs.firefox = {
         enable = true;
+        configPath = "${config.xdg.configHome}/mozilla/firefox";
         profiles.kandread = {
           isDefault = true;
 extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [

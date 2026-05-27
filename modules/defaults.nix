@@ -1,4 +1,4 @@
-{ lib, den, ... }:
+{ lib, den, inputs, ... }:
 {
   den.default.nixos.system.stateVersion = "25.11";
   den.default.nixos.nixpkgs.overlays = [ inputs.nur.overlays.default ];
