@@ -10,7 +10,7 @@
         configPath = "${config.xdg.configHome}/mozilla/firefox";
         profiles.kandread = {
           isDefault = true;
-extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
+          extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
             # Security & Privacy
             ublock-origin         # ad/tracker blocking — essential
             clearurls             # strip tracking parameters from URLs
@@ -23,16 +23,16 @@ extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
             istilldontcareaboutcookies  # auto-dismiss cookie banners
 
             # Distraction-free UI
-            sidebery              # vertical tabs sidebar, replaces horizontal tab bar
+            # sidebery              # vertical tabs sidebar, replaces horizontal tab bar
             sponsorblock          # skip sponsored segments in YouTube videos
             darkreader            # dark mode everywhere
 
             # Utilities
             proton-pass             # password manager
-	    proton-vpn
+            proton-vpn
 
-	    # Productivity
-	    zotero-connector
+            # Productivity
+            zotero-connector
           ];
 
           settings = {
@@ -75,14 +75,14 @@ extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
             "identity.fxaccounts.enabled" = false;
 
             # --- Sidebery: hide native tab bar via userChrome ---
-            "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+            # "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
           };
 
-          userChrome = ''
-            /* Hide native horizontal tab bar — Sidebery takes over */
-            #TabsToolbar { visibility: collapse !important; }
-            #sidebar-header { display: none !important; }
-          '';
+          # userChrome = ''
+          #   /* Hide native horizontal tab bar — Sidebery takes over */
+          #   #TabsToolbar { visibility: collapse !important; }
+          #   #sidebar-header { display: none !important; }
+          # '';
 
           search = {
             force = true;
