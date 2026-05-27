@@ -23,7 +23,6 @@
             istilldontcareaboutcookies  # auto-dismiss cookie banners
 
             # Distraction-free UI
-            # sidebery              # vertical tabs sidebar, replaces horizontal tab bar
             sponsorblock          # skip sponsored segments in YouTube videos
             darkreader            # dark mode everywhere
 
@@ -74,15 +73,13 @@
             "extensions.pocket.enabled" = false;
             "identity.fxaccounts.enabled" = false;
 
-            # --- Sidebery: hide native tab bar via userChrome ---
-            # "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
-          };
+            # --- Vertical tabs ---
+            "sidebar.verticalTabs" = true;
+            "sidebar.verticalTabs.dragToPinPromo.dismissed" = true;
+            "sidebar.expandOnHover" = true;
+            "sidebar.main.tools" = "history,bookmarks";
 
-          # userChrome = ''
-          #   /* Hide native horizontal tab bar — Sidebery takes over */
-          #   #TabsToolbar { visibility: collapse !important; }
-          #   #sidebar-header { display: none !important; }
-          # '';
+          };
 
           search = {
             force = true;
