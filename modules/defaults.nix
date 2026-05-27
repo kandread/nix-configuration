@@ -25,6 +25,7 @@
     den.aspects.networking
     den.aspects.locale
     den.aspects.sops
+    den.aspects.nix-ld
     (den.batteries.unfree [
   "zoom"
   "joypixels"
