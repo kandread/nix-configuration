@@ -39,7 +39,6 @@
             "browser.tabs.inTitlebar" = 0;
             "browser.toolbars.bookmarks.visibility" = "never";
             "browser.tabs.tabMinWidth" = 0;
-            # Hide horizontal tab bar (sidebery takes over)
             "browser.tabs.tabmanager.enabled" = false;
 
             # --- Privacy ---
@@ -52,6 +51,7 @@
             "network.http.referer.XOriginTrimmingPolicy" = 2;
             "dom.security.https_only_mode" = true;
             "dom.security.https_only_mode_ever_enabled" = true;
+            "signon.rememberSignons" = false; # use our own password manager
 
             # --- Telemetry off ---
             "toolkit.telemetry.enabled" = false;
