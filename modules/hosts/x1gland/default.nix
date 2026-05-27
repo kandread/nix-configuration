@@ -10,14 +10,12 @@
         "mem_sleep_default=s2idle"
         "intel_pstate=active"
       ];
+      hardware.enableRedistributableFirmware = true;
+      hardware.enableAllFirmware = true;
       services.xserver.enable = true;
       services.displayManager.gdm.enable = true;
       services.desktopManager.gnome = {
         enable = true;
-        extraGSettingsOverrides = ''
-          [org.gnome.mutter]
-          experimental-features=['scale-monitor-framebuffer', 'xwayland-native-scaling']
-        '';
       };
       services.xserver.xkb = {
         layout = "us";
