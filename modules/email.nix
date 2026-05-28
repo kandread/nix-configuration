@@ -1,7 +1,8 @@
 { ... }:
 {
   den.aspects.email = {
-    homeManager = { pkgs, ... }: {
+    homeManager = { pkgs, config, ... }: {
+      sops.secrets.umass = { };
       programs = {
         mbsync.enable = true;
         mu.enable = true;
@@ -21,7 +22,8 @@
           aliases = [ "andreadis.jhm@ametsoc.org" ];
           userName = "kandread@umass.edu";
           realName = "Kostas Andreadis";
-          passwordCommand = "${pkgs.coreutils}/bin/cat ~/.cache/umass";
+          passwordCommand = "${pkgs.coreutils}/bin/cat ${config.sops.secrets.umass.path}";
+          # passwordCommand = "${pkgs.coreutils}/bin/cat ~/.cache/umass";
 
           imap = {
             host = "localhost";

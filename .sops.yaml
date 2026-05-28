@@ -1,0 +1,9 @@
+keys:
+  - &kandread age10mxujtmxn0pzqvyt37s0xt4agrs6rhuktytqghj73tqss37ursxq765hla
+  - &x1gland age1rgffpespcyjn0d8jglk7km9kfrfhdyev6camd3rck6pn8y47ze4sug23v3
+creation_rules:
+  - path_regex: secrets/secrets.yaml$
+    key_groups:
+    - age:
+      - *x1gland
+      - *kandread

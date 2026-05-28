@@ -6,21 +6,20 @@
       sops = {
         defaultSopsFile = ../secrets/secrets.yaml;
         defaultSopsFormat = "yaml";
-        gnupg = {
-          home = "/root/.gnupg";
-          sshKeyPaths = [ ];
-        };
+        age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
       };
     };
-    homeManager = { config, ... }: {
+    homeManager = { config, pkgs, ... }: {
       imports = [ inputs.sops-nix.homeManagerModules.sops ];
+      home.packages = with pkgs; [
+        sops
+        age
+        ssh-to-age
+      ];
       sops = {
         defaultSopsFile = ../secrets/secrets.yaml;
         defaultSopsFormat = "yaml";
-        gnupg = {
-          home = "${config.home.homeDirectory}/.gnupg";
-          sshKeyPaths = [ ];
-        };
+        age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
       };
     };
   };
