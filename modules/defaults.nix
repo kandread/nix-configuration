@@ -30,6 +30,7 @@
   "zoom"
   "joypixels"
   "claude-code"
+   "canon-cups-ufr2"
   "broadcom-bt-firmware"
   "b43-firmware"
   "xone-dongle-firmware"
