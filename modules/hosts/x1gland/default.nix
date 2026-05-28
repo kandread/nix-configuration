@@ -1,4 +1,4 @@
-{ den, pkgs, ... }:
+{ den, inputs, ... }:
 {
   den.aspects.x1gland = {
     nixos = { pkgs, ... }: {
@@ -12,6 +12,7 @@
       ];
       hardware.enableRedistributableFirmware = true;
       hardware.enableAllFirmware = true;
+      imports = [ inputs.nixos-hardware.nixosModules.lenovo-thinkpad-x1-13th-gen ];
       services.xserver.enable = true;
       services.displayManager.gdm.enable = true;
       services.desktopManager.gnome = {

@@ -23,7 +23,6 @@
           userName = "kandread@umass.edu";
           realName = "Kostas Andreadis";
           passwordCommand = "${pkgs.coreutils}/bin/cat ${config.sops.secrets.umass.path}";
-          # passwordCommand = "${pkgs.coreutils}/bin/cat ~/.cache/umass";
 
           imap = {
             host = "localhost";
