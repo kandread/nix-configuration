@@ -7,7 +7,7 @@
         imagemagick
         ffmpeg
         mpv
-        inkscape
+        # inkscape
       ];
     };
   };

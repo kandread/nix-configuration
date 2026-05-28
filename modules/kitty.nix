@@ -19,7 +19,7 @@
           # Appearance
           window_padding_width = 8;
           hide_window_decorations = "no";
-          background_opacity = "0.95";
+          # background_opacity = "0.95";
           dynamic_background_opacity = "yes";
 
           # Scrollback

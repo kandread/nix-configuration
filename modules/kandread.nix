@@ -20,6 +20,7 @@
     den.aspects.gpg
     den.aspects.firefox
     den.aspects.science
+    den.aspects.theming
     ];
 
     user = { ... }: {
