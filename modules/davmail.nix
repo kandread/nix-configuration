@@ -5,7 +5,7 @@
       services.davmail = {
         enable = true;
         settings = {
-          "davmail.mode" = "O365Interactive";
+          "davmail.mode" = "O365Modern";
           "davmail.logFilePath" = "/home/kandread/.cache/davmail.log";
           "davmail.enableKeepAlive" = "true";
         };
