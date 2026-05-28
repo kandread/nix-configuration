@@ -22,7 +22,6 @@
     den.aspects.science
     den.aspects.theming
     den.aspects.wayland
-    den.aspects.mango
     ];
 
     user = { ... }: {

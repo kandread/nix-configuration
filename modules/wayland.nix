@@ -2,24 +2,18 @@
 {
   den.aspects.wayland = {
     nixos = { ... }: {
-      imports = [ inputs.dms.nixosModules.dank-material-shell ];
-      programs.dank-material-shell.enable = true;
-      security.polkit.enable = true;
+    #   security.polkit.enable = true;
       xdg.portal = {
         enable = true;
         wlr.enable = true;
+        };
+      programs.dms-shell = {
+        enable = true;
+        systemd.target = "wayland-session.target";
       };
+      programs.niri.enable = true;
     };
     homeManager = { pkgs, ... }: {
-      imports = [ inputs.dms.homeModules.dank-material-shell ];
-
-      programs.dank-material-shell = {
-        enable = true;
-        systemd.enable = true;
-        settings = {
-          compositor = "mango";
-        };
-      };
 
       programs.fuzzel = {
         enable = true;
@@ -42,7 +36,7 @@
       };
 
       services.kanshi = {
-        enable = true;
+        enable = false;
         settings = [
           {
             profile.name = "default";
