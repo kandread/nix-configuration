@@ -11,7 +11,7 @@
         enable = true;
         systemd.target = "wayland-session.target";
       };
-      programs.niri.enable = true;
+      programs.mangowc.enable = true;
     };
     homeManager = { pkgs, ... }: {
 
