@@ -7,6 +7,48 @@
         mbsync.enable = true;
         mu.enable = true;
         msmtp.enable = true;
+        afew = {
+          enable = true;
+          extraConfig = ''
+            [SpamFilter]
+            [KillThreadsFilter]
+            [ListMailsFilter]
+            [ArchiveSentMailsFilter]
+            sent_tag = sent
+            [FolderNameFilter]
+            maildir_separator = /
+            folder_transforms = Trash:deleted Junk:spam Drafts:draft Archive:archived Sent:sent Inbox:inbox
+            [Filter.jhm]
+            query = 'to:andreadis.jhm@ametsoc.org'
+            tags = +jhm
+            message = JHM messages
+            [MailMover]
+            folders = umass/Inbox umass/Sent
+            rename = True
+            umass/Inbox = 'tag:spam':umass/Junk 'tag:deleted':umass/Trash 'tag:sent':umass/Sent 'tag:draft':umass/Drafts 'tag:archived':umass/Archive
+            umass/Sent = 'tag:deleted':umass/Trash
+            [InboxFilter]
+          '';
+        };
+        notmuch = {
+          enable = true;
+          new = {
+            tags = [ "new" ];
+            ignore = [ "Archive1" "Conversation History" "Unsent Messages" ];
+          };
+          search.excludeTags = [ "deleted" "spam" "archived" ];
+          extraConfig = {
+            index = {
+              "header.List" = "List-ID";
+            };
+          };
+          hooks = {
+            postNew = ''
+              afew -n -t
+              afew -n -m
+            '';
+          };
+        };
       };
 
       services.mbsync = {
@@ -36,6 +78,8 @@
           maildir.path = "umass";
 
           mu.enable = true;
+
+          notmuch.enable = true;
 
           mbsync = {
             enable = true;
