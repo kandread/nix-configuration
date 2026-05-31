@@ -36,7 +36,7 @@
       };
 
       services.kanshi = {
-        enable = false;
+        enable = true;
         settings = [
           {
             profile.name = "default";
@@ -56,6 +56,7 @@
         wlr-randr
         grim
         slurp
+        wev
       ];
     };
   };
