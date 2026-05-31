@@ -25,7 +25,7 @@
             # Distraction-free UI
             sponsorblock          # skip sponsored segments in YouTube videos
             darkreader            # dark mode everywhere
-            tridactyl
+            # tridactyl
 
             # Utilities
             proton-pass             # password manager
@@ -41,6 +41,7 @@
             "browser.toolbars.bookmarks.visibility" = "never";
             "browser.tabs.tabMinWidth" = 0;
             "browser.tabs.tabmanager.enabled" = false;
+            "browser.tabs.hoverPreview.showThumbnails" = false;
 
             # --- Privacy ---
             "privacy.trackingprotection.enabled" = true;
