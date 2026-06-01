@@ -19,6 +19,7 @@
         wget
         vim
         pinentry-gnome3
+        brightnessctl
       ];
     };
   };
