@@ -23,6 +23,7 @@
     den.aspects.theming
     den.aspects.wayland
     den.aspects.direnv
+    den.aspects.tmux
     ];
 
     user = { ... }: {
