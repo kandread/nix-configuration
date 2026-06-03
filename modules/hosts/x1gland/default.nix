@@ -1,6 +1,9 @@
 { den, inputs, ... }:
 {
   den.aspects.x1gland = {
+    includes = [
+      den.aspects.qtile
+    ];
     nixos = { pkgs, ... }: {
       networking.hostName = "x1gland";
       boot.loader.systemd-boot.enable = true;
