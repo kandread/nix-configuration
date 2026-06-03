@@ -10,6 +10,7 @@
         enable = true;
         interactiveShellInit = ''
           set fish_greeting ""
+          direnv hook fish | source
         '';
         shellAliases = {
           ls  = "eza --icons";
