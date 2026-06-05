@@ -6,6 +6,7 @@
         zathura
         ghostscript
         pdftk
+        xournalpp
       ];
     };
   };
