@@ -27,15 +27,16 @@
     den.aspects.sops
     den.aspects.nix-ld
     (den.batteries.unfree [
-  "zoom"
-  "joypixels"
-  "claude-code"
-   "canon-cups-ufr2"
-  "broadcom-bt-firmware"
-  "b43-firmware"
-  "xone-dongle-firmware"
-  "facetimehd-calibration"
-  "facetimehd-firmware" ])
+      "zoom"
+      "joypixels"
+      "claude-code"
+      "canon-cups-ufr2"
+      "broadcom-bt-firmware"
+      "b43-firmware"
+      "xone-dongle-firmware"
+      "facetimehd-calibration"
+      "facetimehd-firmware" ])
+    (den.batteries.insecure [ "electron-39.8.10" ])
     den.batteries.define-user
   ];
 }

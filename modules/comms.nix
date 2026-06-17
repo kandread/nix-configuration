@@ -4,7 +4,7 @@
     homeManager = { pkgs, ... }: {
       home.packages = with pkgs; [
         zulip
-        zoom
+        zoom-us
       ];
     };
   };

@@ -18,7 +18,7 @@
             [FolderNameFilter]
             maildir_separator = /
             folder_transforms = Trash:deleted Junk:spam Drafts:draft Archive:archived Sent:sent Inbox:inbox
-            [Filter.jhm]
+            [Filter.1]
             query = 'to:andreadis.jhm@ametsoc.org'
             tags = +jhm
             message = JHM messages
