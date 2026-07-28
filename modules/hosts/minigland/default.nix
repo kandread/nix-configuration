@@ -9,12 +9,22 @@
     nixos = { pkgs, ... }: {
       boot.loader.systemd-boot.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;
+      boot.kernelPackages = pkgs.linuxPackages_latest;
+
+      hardware.enableRedistributableFirmware = true;
+      hardware.enableAllFirmware = true;
 
       networking.hostName = "minigland";
       networking.firewall = {
         enable = true;
         allowedTCPPorts = [ 9000 6680 ];
       };
+
+      services.xserver.enable = true;
+      services.displayManager.gdm.enable = true;
+      services.desktopManager.gnome.enable = true;
+
+      services.openssh.enable = true;
 
       services.slimserver.enable = true;
 

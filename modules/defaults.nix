@@ -2,6 +2,7 @@
 {
   den.default.nixos.system.stateVersion = "25.11";
   den.default.nixos.nixpkgs.overlays = [ inputs.nur.overlays.default ];
+  den.default.nixos.home-manager.backupFileExtension = "hm-bak";
   den.default.homeManager.home.stateVersion = "25.11";
   den.default.homeManager.nixpkgs.overlays = [ inputs.nur.overlays.default ];
   den.schema.user.classes = lib.mkDefault [ "homeManager" ];
@@ -26,6 +27,7 @@
     den.aspects.locale
     den.aspects.sops
     den.aspects.nix-ld
+    den.aspects.xlibre
     (den.batteries.unfree [
       "zoom"
       "joypixels"

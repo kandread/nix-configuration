@@ -22,10 +22,10 @@
           m = "mkdir -p";
          };
         plugins = [
-          {
-            name = "tide";
-            src = pkgs.fishPlugins.tide.src;
-          }
+          # {
+          #   name = "tide";
+          #   src = pkgs.fishPlugins.tide.src;
+          # }
           {
             name = "z";
             src = pkgs.fishPlugins.z.src;
