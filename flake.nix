@@ -39,6 +39,10 @@
     #   url = "github:AvengeMedia/DankMaterialShell";
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
+    xlibre-overlay = {
+      url = "git+https://codeberg.org/takagemacoed/xlibre-overlay?ref=dev-26.11";
+    };
+    llm-agents.url = "github:numtide/llm-agents.nix";
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);

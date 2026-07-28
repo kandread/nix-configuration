@@ -1,13 +1,17 @@
-{ ... }:
+{ inputs, ... }:
 {
   den.aspects.llm = {
+    nixos = { ... }: {
+      nixpkgs.overlays = [ inputs.llm-agents.overlays.shared-nixpkgs ];
+    };
     homeManager = { pkgs, ... }: {
+      nixpkgs.overlays = [ inputs.llm-agents.overlays.shared-nixpkgs ];
       home.packages = with pkgs; [
-        claude-code
-        claude-agent-acp
-        opencode
+        llm-agents.claude-code
+        llm-agents.claude-agent-acp
+        llm-agents.opencode
         opencode-claude-auth
-        pi-coding-agent
+        llm-agents.pi
         ollama
       ];
     };
