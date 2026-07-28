@@ -4,7 +4,7 @@
     homeManager = { pkgs, ... }: {
       home.packages = with pkgs; [
         pandoc
-        texlive.combined.scheme-full
+        texliveFull
         typst
         tinymist
         math-preview
