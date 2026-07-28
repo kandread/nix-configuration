@@ -24,7 +24,6 @@
     den.aspects.wayland
     den.aspects.direnv
     den.aspects.tmux
-    den.aspects.flox
     ];
 
     user = { ... }: {
