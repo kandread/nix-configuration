@@ -1,7 +1,7 @@
 { ... }:
 {
   den.aspects.qtile = {
-    includes = [ den.aspects.xserver ];
+    #    includes = [ den.aspects.xserver ];
     nixos = { pkgs, ... }: {
       services.xserver.windowManager.qtile = {
         enable = true;

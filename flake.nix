@@ -1,13 +1,6 @@
 {
   description = "My dendritic NixOS/Nix-Darwin configuration";
 
-  nixConfig = {
-    extra-trusted-substituters = [ "https://cache.flox.dev" ];
-    extra-trusted-public-keys = [
-      "flox-cache-public-1:7F4OyH7ZCnFhcze3fJdfyXYLQw/aV7GEed86nQ7IsOs="
-    ];
-  };
-
   inputs = {
      nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
      nixos-hardware.url = "github:NixOS/nixos-hardware";
@@ -38,15 +31,14 @@
       url = "github:nix-community/NUR";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    stylix = {
-      url = "github:nix-community/stylix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    dms = {
-      url = "github:AvengeMedia/DankMaterialShell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    flox.url = "github:flox/flox/latest";
+    # stylix = {
+    #   url = "github:nix-community/stylix";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
+    # dms = {
+    #   url = "github:AvengeMedia/DankMaterialShell";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
