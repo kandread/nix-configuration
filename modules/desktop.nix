@@ -1,7 +1,8 @@
 { inputs, ... }:
 {
   den.aspects.desktop = {
-    nixos = { ... }: {
+    nixos = { config, lib, ... }: {
+      services.xserver.dpi = 144;
       services.xserver.windowManager.xmonad = {
         enable = true;
         enableContribAndExtras = true;
@@ -17,6 +18,19 @@
       programs.xmobar = {
         enable = true;
       };
+      home.packages = with pkgs; [
+        xmobar
+        flameshot
+        xclip
+        xdotool
+        playerctl
+        brightnessctl
+        pavucontrol
+        xsetroot
+        feh
+        man-db
+        dmenu
+      ];
     };
   };
 }
