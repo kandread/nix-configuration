@@ -8,7 +8,7 @@
       nixpkgs.overlays = [ inputs.emacs-overlay.overlays.default ];
       programs.emacs = {
         enable = true;
-        package = pkgs.emacs-git-pgtk;
+        package = pkgs.emacs-git;
         extraPackages = epkgs: [
           epkgs.pdf-tools
           epkgs.jinx
