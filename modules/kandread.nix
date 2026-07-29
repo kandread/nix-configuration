@@ -23,6 +23,8 @@
     den.aspects.theming
     den.aspects.wayland
     den.aspects.desktop
+    den.aspects.sway
+    den.aspects.waybar
     den.aspects.direnv
     den.aspects.tmux
     ];

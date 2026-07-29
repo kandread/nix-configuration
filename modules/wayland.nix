@@ -46,6 +46,11 @@
                 status = "enable";
                 scale = 1.5;
               }
+              {
+                criteria = "DP-1";
+                status = "enable";
+                scale = 1.5;
+              }
             ];
           }
         ];
