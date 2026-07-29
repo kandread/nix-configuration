@@ -4,7 +4,24 @@
     nixos = { ... }: {
       programs.sway.enable = true;
     };
-    homeManager = { config, ... }: {
+    homeManager = { config, pkgs, ... }: {
+      programs.swaylock.enable = true;
+
+      services.swayidle = {
+        enable = true;
+        timeouts = [
+          { timeout = 300; command = "${pkgs.swaylock}/bin/swaylock -f"; }
+          {
+            timeout = 600;
+            command = "swaymsg 'output * dpms off'";
+            resumeCommand = "swaymsg 'output * dpms on'";
+          }
+        ];
+        events = {
+          before-sleep = "${pkgs.swaylock}/bin/swaylock -f";
+        };
+      };
+
       wayland.windowManager.sway = {
         enable = true;
         wrapperFeatures.gtk = true;
@@ -114,6 +131,7 @@
         # keybinding set instead of merging with it.
         extraConfig = ''
           bindsym Mod4+Shift+s sticky toggle
+          bindsym Mod4+Shift+x exec swaylock -f
         '';
       };
     };
