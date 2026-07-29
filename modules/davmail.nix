@@ -12,7 +12,7 @@
           # mailbox. To try Graph, swap the mode and add the authentication line.
           "davmail.mode" = "O365EWS";
           # "davmail.mode" = "O365Graph";
-          # "davmail.authentication" = "O365Interactive";
+          # "davmail.authentication" = "O365Manual";
 
           # Admin consent for DavMail's own AppID
           # (facd6cff-a294-4415-b59f-c5b01937d7bd) is pending with UMass, and
