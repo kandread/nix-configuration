@@ -50,55 +50,8 @@
           };
         };
 
-        # Palette pulled from the sway wallpaper (clay-banks-u27Rrbs9Dwc-unsplash.jpg):
-        # dark charcoal background, muted grey-green text, warm tan accent
-        # (matching the focuscolor used in mango.nix for cross-WM consistency).
-        style = ''
-          * {
-            font-family: monospace;
-            font-size: 13px;
-            min-height: 0;
-          }
-
-          window#waybar {
-            background-color: rgba(29, 34, 33, 0.9);
-            color: #9fa09a;
-          }
-
-          #workspaces button {
-            padding: 0 8px;
-            color: #9fa09a;
-            background-color: transparent;
-          }
-
-          #workspaces button.focused {
-            background-color: #c9b890;
-            color: #1d2221;
-          }
-
-          #workspaces button.urgent {
-            background-color: #ad401f;
-            color: #1d2221;
-          }
-
-          #clock,
-          #battery,
-          #network,
-          #pulseaudio,
-          #tray,
-          #mode {
-            padding: 0 10px;
-            color: #9fa09a;
-          }
-
-          #battery.charging {
-            color: #c9b890;
-          }
-
-          #battery.warning:not(.charging) {
-            color: #ad401f;
-          }
-        '';
+        # Colors/fonts come from stylix (see theming.nix), which derives a
+        # base16 palette from the sway wallpaper and themes waybar automatically.
       };
     };
   };
