@@ -135,6 +135,7 @@
         extraConfig = ''
           bindsym Mod4+Shift+s sticky toggle
           bindsym Mod4+Shift+x exec swaylock -f
+          bindsym Mod4+x exec grim -g "$(slurp)" | wl-copy
         '';
       };
     };
