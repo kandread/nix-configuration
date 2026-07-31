@@ -8,7 +8,7 @@
         wlr.enable = true;
         };
       programs.dms-shell = {
-        enable = true;
+        enable = false;
         systemd.target = "wayland-session.target";
       };
       programs.mango.enable = true;

@@ -10,14 +10,15 @@
       services.swayidle = {
         enable = true;
         timeouts = [
-          { timeout = 300;
+          {
+            timeout = 300;
             command = "${pkgs.swaylock}/bin/swaylock -f";
           }
-          {
-            timeout = 600;
-            command = "${pkgs.sway}/bin/swaymsg 'output * dpms off'";
-            resumeCommand = "${pkgs.sway}/bin/swaymsg 'output * dpms on'";
-          }
+          # {
+          #   timeout = 600;
+          #   command = "${pkgs.sway}/bin/swaymsg 'output * dpms off'";
+          #   resumeCommand = "${pkgs.sway}/bin/swaymsg 'output * dpms on'";
+          # }
         ];
         events = {
           before-sleep = "${pkgs.swaylock}/bin/swaylock -f";
@@ -33,11 +34,11 @@
           terminal = "kitty";
           menu = "fuzzel";
 
-          # Same font role waybar uses (stylix's waybar target defaults to
-          # monospace) so window titlebars visually match the bar.
+          # Matches waybar's font (waybar.nix) so window titlebars visually
+          # match the bar.
           fonts = {
-            names = [ config.stylix.fonts.monospace.name ];
-            size = config.stylix.fonts.sizes.desktop + 0.0;
+            names = [ "JetBrainsMono Nerd Font" ];
+            size = 10.0;
           };
 
           output."*" = {

@@ -13,10 +13,11 @@
         base16Scheme = "${pkgs.base16-schemes}/share/themes/gigavolt.yaml";
         polarity = "dark";
         targets = {
-          # kitty and sway are hand-configured (kitty.nix, sway.nix) — don't
-          # let stylix silently fight those settings.
+          # kitty, sway, and waybar are hand-configured (kitty.nix, sway.nix,
+          # waybar.nix) — don't let stylix silently fight those settings.
           kitty.enable = false;
           sway.enable = false;
+          waybar.enable = false;
           firefox.profileNames = [ "kandread" ];
         };
         cursor = {

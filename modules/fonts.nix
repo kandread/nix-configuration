@@ -11,6 +11,7 @@
         nerd-fonts.roboto-mono
         nerd-fonts.symbols-only
         nerd-fonts.geist-mono
+        nerd-fonts.jetbrains-mono
         fg-virgil
         font-awesome
         fira
