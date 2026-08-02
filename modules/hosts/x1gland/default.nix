@@ -2,7 +2,7 @@
 {
   den.aspects.x1gland = {
     includes = [
-      den.aspects.qtile
+      #den.aspects.qtile
     ];
     nixos = { pkgs, ... }: {
       networking.hostName = "x1gland";

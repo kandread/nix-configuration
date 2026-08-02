@@ -91,6 +91,11 @@
             margin: 0 4px;
           }
 
+          #battery {
+          padding: 0 10px;
+          margin: 0 4px;
+          }
+
           #cpu {
             color: #cba6f7;
             padding: 0 10px;
