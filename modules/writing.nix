@@ -10,7 +10,7 @@
         math-preview
         hunspell
         hunspellDicts.en_US-large
-        libreoffice-fresh
+        libreoffice-stable
       ];
     };
   };

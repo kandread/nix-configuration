@@ -52,7 +52,7 @@
       };
 
       services.mbsync = {
-        enable = pkgs.stdenv.isLinux;
+        enable = pkgs.stdenv.hostPlatform.isLinux;
         frequency = "*:0/5";
       };
 
