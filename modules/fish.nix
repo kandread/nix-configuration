@@ -13,7 +13,7 @@
           direnv hook fish | source
         '';
         shellAliases = {
-          ls  = "eza --icons";
+          ls  = "eza --icons auto";
           ll  = "eza --icons -l";
           la  = "eza --icons -la";
           lt  = "eza --icons --tree";
