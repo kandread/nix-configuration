@@ -2,16 +2,16 @@
   description = "My dendritic NixOS/Nix-Darwin configuration";
 
   inputs = {
-     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-     nixos-hardware.url = "github:NixOS/nixos-hardware";
-     import-tree.url = "github:vic/import-tree";
-     flake-parts.url = "github:hercules-ci/flake-parts";
-     den.url = "github:denful/den";
-     home-manager = {
-       url = "github:nix-community/home-manager";
-       inputs.nixpkgs.follows = "nixpkgs";
-     };
-     nix-ld = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
+    import-tree.url = "github:vic/import-tree";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    den.url = "github:denful/den";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nix-ld = {
       url = "github:Mic92/nix-ld";
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -35,12 +35,9 @@
       url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # dms = {
-    #   url = "github:AvengeMedia/DankMaterialShell";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
-    xlibre-overlay = {
-      url = "git+https://codeberg.org/takagemacoed/xlibre-overlay?ref=dev-26.11";
+    river-next = {
+      url = "github:dmkhitaryan/river-next-nix-module";
+      flake = false;
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
   };
