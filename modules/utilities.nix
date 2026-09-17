@@ -14,7 +14,6 @@
         jq
         eza
         btop
-        fasd
         rsync
         wget
         vim
