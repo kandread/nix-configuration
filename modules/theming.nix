@@ -17,6 +17,7 @@
           # waybar.nix) — don't let stylix silently fight those settings.
           kitty.enable = false;
           sway.enable = false;
+          emacs.enable = false;
           waybar.enable = false;
           firefox.profileNames = [ "kandread" ];
         };
