@@ -35,17 +35,48 @@
         };
       };
 
+      # kanshi matches a profile only when it accounts for *exactly* the
+      # connected outputs: every output in the profile must be present, and
+      # every connected output must be claimed by the profile. So one profile
+      # per hardware configuration, not one profile listing every output that
+      # might ever appear — that last form matches nothing unless everything
+      # is plugged in at once.
+      #
+      # This aspect reaches both hosts through kandread, so minigland (a
+      # desktop, DP-1 only) needs its own profile alongside x1gland's.
       services.kanshi = {
         enable = true;
         settings = [
           {
-            profile.name = "default";
+            profile.name = "x1gland-docked";
+            profile.outputs = [
+              {
+                criteria = "eDP-1";
+                status = "enable";
+                scale = 1.5;
+                position = "0,0";
+              }
+              {
+                criteria = "DP-1";
+                status = "enable";
+                scale = 1.5;
+                position = "1280,0";
+              }
+            ];
+          }
+          {
+            profile.name = "x1gland-laptop";
             profile.outputs = [
               {
                 criteria = "eDP-1";
                 status = "enable";
                 scale = 1.5;
               }
+            ];
+          }
+          {
+            profile.name = "minigland-desktop";
+            profile.outputs = [
               {
                 criteria = "DP-1";
                 status = "enable";
@@ -61,6 +92,8 @@
         wlr-randr
         grim
         slurp
+        sway-contrib.grimshot
+	swaybg
         wev
       ];
     };
