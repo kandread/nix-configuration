@@ -27,7 +27,6 @@
     den.aspects.locale
     den.aspects.sops
     den.aspects.nix-ld
-    den.aspects.xlibre
     (den.batteries.unfree [
       "zoom"
       "joypixels"
