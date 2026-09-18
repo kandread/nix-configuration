@@ -5,7 +5,10 @@
       programs.sway.enable = true;
     };
     homeManager = { config, pkgs, ... }: {
-      programs.swaylock.enable = true;
+      programs.swaylock = {
+enable = true;
+package = pkgs.swaylock-fancy;
+};
 
       services.swayidle = {
         enable = true;
