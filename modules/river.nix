@@ -2,18 +2,35 @@
 {
   den.aspects.river = {
 
-    nixos = { pkgs, ... }: {
-      imports = [ "${inputs.river-next}/river-module.nix" ];
+    nixos = { pkgs, ... }:
+      let
+        argen = pkgs.callPackage "${inputs.river-next}/window-managers/argen/package.nix" { };
 
-      environment.systemPackages = with pkgs; [
-        python3
-        ironbar
-      ];
+        ironbar-cu1 = pkgs.writeShellApplication {
+          name = "ironbar-cu1";
+          runtimeInputs = [ argen pkgs.jq pkgs.ironbar ];
+          text = ''
+            context=$(argenctl context list --json | jq -r '.[] | select(.current == true) | .name')
 
-      programs.river-next = {
-        enable = true;
-        windowManagers = [ "kwm" "argen" ];
+            line="[[ $context ]]"
+
+            ironbar var set custom-status-1 "$line" > /dev/null
+          '';
+        };
+      in
+      {
+        imports = [ "${inputs.river-next}/river-module.nix" ];
+
+        environment.systemPackages = [
+          pkgs.python3
+          pkgs.ironbar
+          ironbar-cu1
+        ];
+
+        programs.river-next = {
+          enable = true;
+          windowManagers = [ "kwm" "argen" ];
+        };
       };
-    };
   };
 }
