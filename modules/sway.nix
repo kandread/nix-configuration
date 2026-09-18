@@ -7,7 +7,7 @@
     homeManager = { config, pkgs, ... }: {
       programs.swaylock = {
 enable = true;
-package = pkgs.swaylock-fancy;
+package = pkgs.swaylock-effects;
 };
 
       services.swayidle = {
