@@ -13,14 +13,14 @@
       };
       programs.mango.enable = true;
     };
-    homeManager = { pkgs, ... }: {
+    homeManager = { pkgs, lib, ... }: {
 
       programs.fuzzel = {
         enable = true;
         settings = {
           main = {
             terminal = "${pkgs.kitty}/bin/kitty";
-            icon-theme = "Adwaita";
+            # icon-theme = "Adwaita";
             icons-enabled = true;
             width = 40;
             lines = 12;
@@ -32,6 +32,15 @@
             width = 2;
             radius = 6;
           };
+          colors = lib.mkForce {
+          background = "161616ff";
+          text = "ffffffff";
+          match = "ee5396ff";
+          selection-match = "ee5396ff";
+          selection = "262626ff";
+          selection-text = "33b1ffff";
+          border = "525252ff";
+            };
         };
       };
 
