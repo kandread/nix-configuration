@@ -12,7 +12,7 @@
           text = ''
             context=$(argenctl context list --json | jq -r '.[] | select(.current == true) | .name')
 
-            line="[[ $context ]]"
+            line="[[$context]]"
 
             ironbar var set custom-status-1 "$line" > /dev/null
           '';
