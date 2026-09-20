@@ -5,6 +5,7 @@
       home.packages = with pkgs; [
         pandoc
         texliveFull
+        texlab
         typst
         tinymist
         math-preview
