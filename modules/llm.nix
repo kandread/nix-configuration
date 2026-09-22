@@ -12,7 +12,6 @@
         llm-agents.opencode
         opencode-claude-auth
         llm-agents.pi
-        ollama
       ];
     };
   };
