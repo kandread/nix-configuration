@@ -36,6 +36,7 @@ A dendritic NixOS configuration using [den](https://den.denful.dev/), an aspect-
 │   ├── media.nix       # Multimedia tools
 │   ├── networking.nix  # NetworkManager
 │   ├── pdf.nix         # PDF tools
+│   ├── searx.nix       # SearXNG metasearch (workgland)
 │   ├── sops.nix        # Secrets management via sops-nix + GPG
 │   ├── ssh.nix         # SSH client config
 │   ├── tailscale.nix   # Tailscale VPN
