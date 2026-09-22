@@ -26,6 +26,7 @@
       den.aspects.sway
       den.aspects.waybar
       den.aspects.river
+      den.aspects.niri
       den.aspects.direnv
       den.aspects.tmux
     ];
