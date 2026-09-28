@@ -3,6 +3,9 @@
   den.default.nixos.system.stateVersion = "25.11";
   den.default.nixos.nixpkgs.overlays = [ inputs.nur.overlays.default ];
   den.default.nixos.home-manager.backupFileExtension = "hm-bak";
+  den.default.darwin.system.stateVersion = 6;
+  den.default.darwin.nixpkgs.overlays = [ inputs.nur.overlays.default ];
+  den.default.darwin.home-manager.backupFileExtension = "hm-bak";
   den.default.homeManager.home.stateVersion = "25.11";
   den.default.homeManager.nixpkgs.overlays = [ inputs.nur.overlays.default ];
   den.schema.user.classes = lib.mkDefault [ "homeManager" ];
@@ -14,9 +17,22 @@
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
     ];
   };
+  den.default.darwin.nix.settings = {
+    sandbox = "relaxed";
+    experimental-features = [ "nix-command" "flakes" ];
+    substituters = [ "https://nix-community.cachix.org" ];
+    trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    ];
+  };
   den.default.nixos.nix.gc = {
     automatic = true;
     dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+  den.default.darwin.nix.gc = {
+    automatic = true;
+    interval = { Weekday = 7; Hour = 3; Minute = 15; };
     options = "--delete-older-than 30d";
   };
   den.default.includes = [

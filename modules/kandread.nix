@@ -1,10 +1,9 @@
-{ den, ... }:
+{ den, lib, ... }:
 {
   den.aspects.kandread = {
     includes = [
       den.aspects.emacs
       den.aspects.email
-      den.aspects.davmail
       den.aspects.git
       den.aspects.ssh
       den.aspects.writing
@@ -21,19 +20,29 @@
       den.aspects.firefox
       den.aspects.science
       den.aspects.theming
-      den.aspects.wayland
-      den.aspects.desktop
-      den.aspects.sway
-      den.aspects.waybar
-      den.aspects.river
-      den.aspects.niri
       den.aspects.direnv
       den.aspects.tmux
+      (
+        { host, ... }:
+        lib.optionals (host.class == "nixos") [
+          den.aspects.wayland
+          den.aspects.desktop
+          den.aspects.sway
+          den.aspects.waybar
+          den.aspects.river
+          den.aspects.niri
+          den.aspects.davmail
+        ]
+      )
     ];
 
-    user = { ... }: {
-      extraGroups = [ "networkmanager" "wheel" ];
-      description = "Kostas Andreadis";
-    };
+    user =
+      { host, ... }:
+      {
+        description = "Kostas Andreadis";
+      }
+      // lib.optionalAttrs (host.class == "nixos") {
+        extraGroups = [ "networkmanager" "wheel" ];
+      };
   };
 }
