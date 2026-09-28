@@ -21,7 +21,7 @@
           waybar.enable = false;
           firefox.profileNames = [ "kandread" ];
         };
-        cursor = {
+        cursor = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
           name = "Bibata-Modern-Classic";
           package = pkgs.bibata-cursors;
           size = 24;

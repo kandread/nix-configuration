@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 {
   den.aspects.writing = {
     homeManager = { pkgs, ... }: {
@@ -11,6 +11,7 @@
         math-preview
         hunspell
         hunspellDicts.en_US-large
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         libreoffice-stable
       ];
     };

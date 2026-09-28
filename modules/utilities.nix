@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 {
   den.aspects.utilities = {
     homeManager = { pkgs, ... }: {
@@ -17,6 +17,7 @@
         rsync
         wget
         vim
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         pinentry-gnome3
         brightnessctl
       ];

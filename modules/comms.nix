@@ -1,10 +1,11 @@
-{ ... }:
+{ lib, ... }:
 {
   den.aspects.comms = {
     homeManager = { pkgs, ... }: {
       home.packages = with pkgs; [
-        zulip
         zoom-us
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+        zulip
       ];
     };
   };
