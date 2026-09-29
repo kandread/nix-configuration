@@ -17,7 +17,7 @@
           binds = {
             "Mod+T" =  {
               _props.hotkey-overlay-title = "Open a Terminal";
-              spawn = ["kitty"];
+              spawn = ["alacritty"];
             };
           };
             # niri has no built-in wallpaper support, so spawn swaybg (already

@@ -13,9 +13,8 @@
         base16Scheme = "${pkgs.base16-schemes}/share/themes/gigavolt.yaml";
         polarity = "dark";
         targets = {
-          # kitty, sway, and waybar are hand-configured (kitty.nix, sway.nix,
-          # waybar.nix) — don't let stylix silently fight those settings.
           kitty.enable = false;
+          alacritty.enable = false;
           sway.enable = false;
           emacs.enable = false;
           waybar.enable = false;

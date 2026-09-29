@@ -12,6 +12,7 @@
       den.aspects.devel
       den.aspects.comms
       den.aspects.kitty
+      den.aspects.alacritty
       den.aspects.fish
       den.aspects.calendar
       den.aspects.llm
