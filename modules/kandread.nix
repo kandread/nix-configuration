@@ -28,6 +28,7 @@
       den.aspects.waybar
       den.aspects.river
       den.aspects.niri
+      den.aspects.eww
       den.aspects.direnv
       den.aspects.tmux
     ];

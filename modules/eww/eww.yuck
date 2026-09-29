@@ -1,0 +1,123 @@
+;; Niri bar: workspaces, window title, wifi, volume, battery, keyboard
+;; layout, and clock. Everything is polled rather than event-driven — niri
+;; has no long-running eww widget module, and polling keeps this simple.
+
+(defpoll workspaces :interval "1s" :initial "[]"
+  "niri msg -j workspaces | jq -c '[.[] | select(.active_window_id != null or .is_focused)]'")
+
+(defpoll window-title :interval "1s" :initial ""
+  "niri msg -j focused-window | jq -r '.title // \"\"'")
+
+;; niri.nix configures xkb layout "us,gr" — this reads back the active one.
+(defpoll kb-layout :interval "2s" :initial "??"
+  "niri msg -j keyboard-layouts | jq -r '.names[.current_idx]'")
+
+(defpoll wifi :interval "5s" :initial ""
+  "nmcli -t -f active,ssid,signal dev wifi 2>/dev/null | awk -F: '$1==\"yes\"{print $2\" \"$3\"%\"; f=1} END{if (!f) print \"disconnected\"}'")
+
+(defpoll volume :interval "1s" :initial ""
+  "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{pct=int($2*100+0.5); print pct\"%\"(NF>2?\" muted\":\"\")}'")
+
+(defpoll volume-pct :interval "1s" :initial "0"
+  "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100+0.5)}'")
+
+(defpoll wifi-ip :interval "10s" :initial ""
+  "ip -4 -o addr show scope global | awk '{print $2\": \"$4; exit}'")
+
+(defpoll datetime :interval "10s" :initial ""
+  "date '+%a %Y-%m-%d %H:%M'")
+
+;; Icon glyphs in Nerd Font overflow their cell, so a plain space after them
+;; looks like no gap. A separate label with a CSS margin keeps the spacing stable.
+(defwidget icon-label [icon text]
+  (box :orientation "h" :space-evenly false
+    (label :class "icon" :text icon)
+    (label :text text)))
+
+(defwidget workspaces-widget []
+  (box :class "workspaces" :orientation "h" :space-evenly false :halign "start"
+    (for ws in workspaces
+      (button :class "workspace ${ws.is_focused ? "focused" : ws.is_active ? "active" : ""}"
+              :onclick "niri msg action focus-workspace ${ws.idx}"
+        "${ws.idx}"))))
+
+(defwidget window-title-widget []
+  (label :class "window-title" :limit-width 50 :text "${window-title}"))
+
+(defwidget keyboard-widget []
+  (button :class "keyboard" :onclick "niri msg action switch-layout next"
+    (icon-label :icon "" :text "${kb-layout}")))
+
+(defwidget wifi-widget []
+  (button :class "wifi" :onclick "eww close volume-popup battery-popup clock-popup; eww open --toggle wifi-popup"
+    (icon-label :icon "" :text "${wifi}")))
+
+(defwidget volume-widget []
+  (button :class "volume" :onclick "eww close wifi-popup battery-popup clock-popup; eww open --toggle volume-popup"
+    (icon-label :icon "" :text "${volume}")))
+
+(defwidget battery-widget []
+  (button :class "battery" :onclick "eww close wifi-popup volume-popup clock-popup; eww open --toggle battery-popup"
+    (icon-label :icon "" :text "${EWW_BATTERY.BAT0.capacity}%${EWW_BATTERY.BAT0.status == "Charging" ? "+" : ""}")))
+
+(defwidget clock-widget []
+  (button :class "clock" :onclick "eww close wifi-popup volume-popup battery-popup; eww open --toggle clock-popup"
+    (icon-label :icon "" :text "${datetime}")))
+
+(defwidget bar []
+  (centerbox :orientation "h" :class "bar"
+    (workspaces-widget)
+    (window-title-widget)
+    (box :class "right" :orientation "h" :space-evenly false :halign "end"
+      (wifi-widget)
+      (volume-widget)
+      (battery-widget)
+      (keyboard-widget)
+      (clock-widget))))
+
+(defwindow bar
+  :monitor 0
+  :geometry (geometry :x "0px" :y "0px" :width "100%" :height "30px" :anchor "top center")
+  :stacking "fg"
+  :exclusive true
+  :windowtype "dock"
+  (bar))
+
+;; Click-to-toggle popups, dropped just under the bar. Clicking the same
+;; widget again closes them.
+(defwidget popup-box []
+  (box :class "popup" :orientation "v" :space-evenly false
+    (children)))
+
+(defwindow clock-popup
+  :monitor 0
+  :geometry (geometry :x "12px" :y "34px" :anchor "top right")
+  :stacking "fg"
+  (popup-box (calendar)))
+
+(defwindow volume-popup
+  :monitor 0
+  :geometry (geometry :x "160px" :y "34px" :width "240px" :anchor "top right")
+  :stacking "fg"
+  (popup-box
+    (label :class "popup-title" :halign "start" :text "Volume ${volume-pct}%")
+    (scale :min 0 :max 101 :value volume-pct
+           :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}%")
+    (button :class "popup-action" :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+      "Toggle mute")))
+
+(defwindow wifi-popup
+  :monitor 0
+  :geometry (geometry :x "260px" :y "34px" :anchor "top right")
+  :stacking "fg"
+  (popup-box
+    (label :class "popup-title" :halign "start" :text "${wifi}")
+    (label :halign "start" :text "${wifi-ip}")))
+
+(defwindow battery-popup
+  :monitor 0
+  :geometry (geometry :x "100px" :y "34px" :anchor "top right")
+  :stacking "fg"
+  (popup-box
+    (label :class "popup-title" :halign "start" :text "Battery ${EWW_BATTERY.BAT0.capacity}%")
+    (label :halign "start" :text "${EWW_BATTERY.BAT0.status}")))

@@ -8,7 +8,7 @@
         settings = {
           env.TERM = "xterm-256color";
 
-          shell.program = "${pkgs.fish}/bin/fish";
+          terminal.shell.program = "${pkgs.fish}/bin/fish";
 
           window = {
             padding = { x = 8; y = 8; };
