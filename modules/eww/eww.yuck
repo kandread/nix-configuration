@@ -15,6 +15,9 @@
 (defpoll wifi :interval "5s" :initial ""
   "nmcli -t -f active,ssid,signal dev wifi 2>/dev/null | awk -F: '$1==\"yes\"{print $2\" \"$3\"%\"; f=1} END{if (!f) print \"disconnected\"}'")
 
+(defpoll wifi-signal :interval "5s" :initial ""
+  "nmcli -t -f active,signal dev wifi 2>/dev/null | awk -F: '$1==\"yes\"{print $2\"%\"; f=1} END{if (!f) print \"--\"}'")
+
 (defpoll volume :interval "1s" :initial ""
   "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{pct=int($2*100+0.5); print pct\"%\"(NF>2?\" muted\":\"\")}'")
 
@@ -50,7 +53,7 @@
 
 (defwidget wifi-widget []
   (button :class "wifi" :onclick "eww close volume-popup battery-popup clock-popup; eww open --toggle wifi-popup"
-    (icon-label :icon "" :text "${wifi}")))
+    (icon-label :icon "" :text "${wifi-signal}")))
 
 (defwidget volume-widget []
   (button :class "volume" :onclick "eww close wifi-popup battery-popup clock-popup; eww open --toggle volume-popup"
@@ -65,10 +68,10 @@
     (icon-label :icon "" :text "${datetime}")))
 
 (defwidget bar []
-  (centerbox :orientation "h" :class "bar"
+  (box :orientation "h" :space-evenly false :class "bar"
     (workspaces-widget)
     (window-title-widget)
-    (box :class "right" :orientation "h" :space-evenly false :halign "end"
+    (box :class "right" :orientation "h" :space-evenly false :halign "end" :hexpand true
       (wifi-widget)
       (volume-widget)
       (battery-widget)
