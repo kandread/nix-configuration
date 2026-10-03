@@ -4,22 +4,23 @@
     nixos = { ... }: {
       programs.niri.enable = true;
     };
-    homeManager = { ... }: {
+    homeManager = { lib, ... }:
+    {
+      # niri's default-config.kdl, spelled out in niri/config.kdl (minus its
+      # `spawn-at-startup "waybar"` line, since eww is the bar here, and with
+      # comments stripped). Volume steps are 1% instead of 10%.
+      # Same position the module uses for its own default-config include.
+      wayland.windowManager.niri.extraConfig =
+        lib.mkOrder 501 (builtins.readFile ./niri/config.kdl);
+
       wayland.windowManager.niri = {
         enable = true;
 
-        # Pull in niri's shipped default-config.kdl verbatim rather than
-        # hand-rolling a config. Everything below is layered on top of it.
-        enableDefaultConfig = true;
+        # The default config is spelled out in niri/config.kdl instead.
+        enableDefaultConfig = false;
 
         settings = {
           prefer-no-csd = {};
-          binds = {
-            "Mod+T" =  {
-              _props.hotkey-overlay-title = "Open a Terminal";
-              spawn = ["alacritty"];
-            };
-          };
 
           # Matches mango's dual layout (mango.nix) so the eww bar's keyboard
           # widget (modules/eww/eww.yuck) has something real to switch.
