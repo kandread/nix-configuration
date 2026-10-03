@@ -22,10 +22,6 @@
         settings = {
           prefer-no-csd = {};
 
-          # Matches mango's dual layout (mango.nix) so the eww bar's keyboard
-          # widget (modules/eww/eww.yuck) has something real to switch.
-          input.keyboard.xkb.layout = "us,gr";
-
           # Repeated top-level nodes (two spawn-at-startup commands) need the
           # `_children` list form rather than a single spawn-at-startup key.
           _children = [
