@@ -1,7 +1,5 @@
 input {
     keyboard {
-        // Matches mango's dual layout (mango.nix) so the eww bar's keyboard
-        // widget (modules/eww/eww.yuck) has something real to switch.
         xkb {
             layout "us,gr"
         }
@@ -111,7 +109,7 @@ binds {
 
     Mod+T hotkey-overlay-title="Open a Terminal" { spawn "alacritty"; }
     Mod+D hotkey-overlay-title="Run an Application: fuzzel" { spawn "fuzzel"; }
-    Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
+    Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn-sh "swaylock --indicator --clock --effect-blur 10x5 --screenshots"; }
 
     Super+Alt+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
 
