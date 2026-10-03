@@ -18,11 +18,10 @@
 (defpoll wifi-signal :interval "5s" :initial ""
   "nmcli -t -f active,signal dev wifi 2>/dev/null | awk -F: '$1==\"yes\"{print $2\"%\"; f=1} END{if (!f) print \"--\"}'")
 
-(defpoll volume :interval "1s" :initial ""
-  "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{pct=int($2*100+0.5); print pct\"%\"(NF>2?\" muted\":\"\")}'")
-
-(defpoll volume-pct :interval "1s" :initial "0"
-  "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100+0.5)}'")
+;; Event-driven: pactl subscribe fires on every sink change (works against
+;; PipeWire's pulse server), so the bar updates immediately instead of on a poll.
+(deflisten volume-state :initial "{\"pct\":0,\"muted\":false}"
+  "emit() { wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf \"{\\\"pct\\\":%d,\\\"muted\\\":%s}\\n\", int($2*100+0.5), (NF>2?\"true\":\"false\")}'; }; emit; pactl subscribe | while read -r _ ev _ obj _; do case \"$ev $obj\" in \"'change' sink\"|\"'change' server\") emit;; esac; done")
 
 (defpoll wifi-ip :interval "10s" :initial ""
   "ip -4 -o addr show scope global | awk '{print $2\": \"$4; exit}'")
@@ -57,7 +56,7 @@
 
 (defwidget volume-widget []
   (button :class "volume" :onclick "eww close wifi-popup battery-popup clock-popup; eww open --toggle volume-popup"
-    (icon-label :icon "" :text "${volume}")))
+    (icon-label :icon "" :text "${volume-state.pct}%${volume-state.muted ? " muted" : ""}")))
 
 (defwidget battery-widget []
   (button :class "battery" :onclick "eww close wifi-popup volume-popup clock-popup; eww open --toggle battery-popup"
@@ -103,8 +102,8 @@
   :geometry (geometry :x "160px" :y "34px" :width "240px" :anchor "top right")
   :stacking "fg"
   (popup-box
-    (label :class "popup-title" :halign "start" :text "Volume ${volume-pct}%")
-    (scale :min 0 :max 101 :value volume-pct
+    (label :class "popup-title" :halign "start" :text "Volume ${volume-state.pct}%")
+    (scale :min 0 :max 101 :value volume-state.pct
            :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}%")
     (button :class "popup-action" :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
       "Toggle mute")))
