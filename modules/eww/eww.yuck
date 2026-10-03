@@ -51,20 +51,26 @@
     (icon-label :icon "" :text "${kb-layout}")))
 
 (defwidget wifi-widget []
-  (button :class "wifi" :onclick "eww close volume-popup battery-popup clock-popup; eww open --toggle wifi-popup"
+  (button :class "wifi" :onclick "eww close volume-popup battery-popup clock-popup power-popup; eww open --toggle wifi-popup"
     (icon-label :icon "" :text "${wifi-signal}")))
 
 (defwidget volume-widget []
-  (button :class "volume" :onclick "eww close wifi-popup battery-popup clock-popup; eww open --toggle volume-popup"
+  (button :class "volume" :onclick "eww close wifi-popup battery-popup clock-popup power-popup; eww open --toggle volume-popup"
     (icon-label :icon "" :text "${volume-state.pct}%${volume-state.muted ? " muted" : ""}")))
 
 (defwidget battery-widget []
-  (button :class "battery" :onclick "eww close wifi-popup volume-popup clock-popup; eww open --toggle battery-popup"
+  (button :class "battery" :onclick "eww close wifi-popup volume-popup clock-popup power-popup; eww open --toggle battery-popup"
     (icon-label :icon "" :text "${EWW_BATTERY.BAT0.capacity}%${EWW_BATTERY.BAT0.status == "Charging" ? "+" : ""}")))
 
 (defwidget clock-widget []
-  (button :class "clock" :onclick "eww close wifi-popup volume-popup battery-popup; eww open --toggle clock-popup"
+  (button :class "clock" :onclick "eww close wifi-popup volume-popup battery-popup power-popup; eww open --toggle clock-popup"
     (icon-label :icon "" :text "${datetime}")))
+
+;; Power menu: the button toggles power-popup (defined below).
+(defwidget power-widget []
+  (button :class "power"
+          :onclick "eww close wifi-popup volume-popup battery-popup clock-popup; eww open --toggle power-popup"
+    (label :text "")))
 
 (defwidget bar []
   (box :orientation "h" :space-evenly false :class "bar"
@@ -75,7 +81,8 @@
       (volume-widget)
       (battery-widget)
       (keyboard-widget)
-      (clock-widget))))
+      (clock-widget)
+      (power-widget))))
 
 (defwindow bar
   :monitor 0
@@ -103,7 +110,7 @@
   :stacking "fg"
   (popup-box
     (label :class "popup-title" :halign "start" :text "Volume ${volume-state.pct}%")
-    (scale :min 0 :max 101 :value volume-state.pct
+    (scale :min 0 :max 101 :value "${volume-state.pct}"
            :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}%")
     (button :class "popup-action" :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
       "Toggle mute")))
@@ -123,3 +130,18 @@
   (popup-box
     (label :class "popup-title" :halign "start" :text "Battery ${EWW_BATTERY.BAT0.capacity}%")
     (label :halign "start" :text "${EWW_BATTERY.BAT0.status}")))
+
+;; Each action closes the menu first so it doesn't linger over the session
+;; teardown. Logout skips niri's confirmation dialog since this menu is the
+;; confirmation.
+(defwindow power-popup
+  :monitor 0
+  :geometry (geometry :x "12px" :y "34px" :anchor "top right")
+  :stacking "fg"
+  (popup-box
+    (button :class "popup-action" :onclick "eww close power-popup; niri msg action quit --skip-confirmation"
+      (icon-label :icon "" :text "Logout"))
+    (button :class "popup-action" :onclick "eww close power-popup; systemctl reboot"
+      (icon-label :icon "" :text "Reboot"))
+    (button :class "popup-action" :onclick "eww close power-popup; systemctl poweroff"
+      (icon-label :icon "" :text "Poweroff"))))
