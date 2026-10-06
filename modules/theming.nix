@@ -15,6 +15,7 @@
         targets = {
           kitty.enable = false;
           alacritty.enable = false;
+          foot.enable = false;
           sway.enable = false;
           emacs.enable = false;
           waybar.enable = false;

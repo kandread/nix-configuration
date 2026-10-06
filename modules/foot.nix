@@ -24,7 +24,7 @@
 
           # Nord — matches the kitty and alacritty themes for visual
           # consistency across terminals.
-          colors = {
+          colors-dark = {
             background = "2e3440";
             foreground = "d8dee9";
             regular0 = "3b4252";
