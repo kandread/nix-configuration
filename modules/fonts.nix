@@ -14,6 +14,7 @@
         nerd-fonts.jetbrains-mono
         fg-virgil
         font-awesome
+        gyre-fonts
         fira
         fira-math
         fira-code

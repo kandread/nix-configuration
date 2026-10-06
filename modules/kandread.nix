@@ -20,6 +20,9 @@
       den.aspects.media
       den.aspects.gpg
       den.aspects.firefox
+      den.aspects.librewolf
+      den.aspects.qutebrowser
+      den.aspects.chromium
       den.aspects.science
       den.aspects.theming
       den.aspects.wayland
