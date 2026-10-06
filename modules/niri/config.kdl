@@ -1,7 +1,8 @@
 input {
     keyboard {
         xkb {
-            layout "us,gr"
+            layout "us,gr,us"
+            variant ",,colemak"
         }
 
         numlock
@@ -107,7 +108,7 @@ window-rule {
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
-    Mod+T hotkey-overlay-title="Open a Terminal" { spawn "alacritty"; }
+    Mod+T hotkey-overlay-title="Open a Terminal" { spawn "foot"; }
     Mod+D hotkey-overlay-title="Run an Application: fuzzel" { spawn "fuzzel"; }
     Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn-sh "swaylock --indicator --clock --effect-blur 10x5 --screenshots"; }
 
