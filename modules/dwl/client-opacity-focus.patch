@@ -1,0 +1,208 @@
+Port of dwl-patches client-opacity-focus (2026-04-27) to dwl 0.9.
+Original: https://codeberg.org/dwl/dwl-patches/src/branch/main/patches/client-opacity-focus
+Changes vs upstream: rebased onto 0.9, per-frame opacity loop moved into the
+simpler 0.9 rendermon, unfocus handled via focused_client, XWayland clients
+given default opacity too.
+
+--- a/config.def.h	2026-10-13 15:20:23.337458957 -0400
++++ b/config.def.h	2026-10-13 15:20:23.338458944 -0400
+@@ -14,6 +14,8 @@
+ static const float urgentcolor[]           = COLOR(0xff0000ff);
+ /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
+ static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
++static const float default_opacity_unfocus = 0.70f;
++static const float default_opacity_focus   = 1.00f;
+ 
+ /* tagging - TAGCOUNT must be no greater than 31 */
+ #define TAGCOUNT (9)
+@@ -22,9 +24,9 @@
+ static int log_level = WLR_ERROR;
+ 
+ static const Rule rules[] = {
+-	/* app_id             title       tags mask     isfloating   monitor */
+-	{ "Gimp_EXAMPLE",     NULL,       0,            1,           -1 }, /* Start on currently visible tags floating, not tiled */
+-	{ "firefox_EXAMPLE",  NULL,       1 << 8,       0,           -1 }, /* Start on ONLY tag "9" */
++	/* app_id             title       tags mask     isfloating   alpha focus   alpha unfocus   monitor */
++	{ "Gimp_EXAMPLE",     NULL,       0,            1,           1.00,         0.20,           -1 }, /* Start on currently visible tags floating, not tiled */
++	{ "firefox_EXAMPLE",  NULL,       1 << 8,       0,           1.00,         1.00,           -1 }, /* Start on ONLY tag "9" */
+     /* default/example rule: can be changed but cannot be eliminated; at least one rule must exist */
+ };
+ 
+@@ -135,6 +137,10 @@
+ 	{ MODKEY,                    XKB_KEY_t,           setlayout,        {.v = &layouts[0]} },
+ 	{ MODKEY,                    XKB_KEY_f,           setlayout,        {.v = &layouts[1]} },
+ 	{ MODKEY,                    XKB_KEY_m,           setlayout,        {.v = &layouts[2]} },
++	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_k,           setopacityunfocus, {.f = +0.1f} },
++	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_j,           setopacityunfocus, {.f = -0.1f} },
++	{ MODKEY|WLR_MODIFIER_CTRL|WLR_MODIFIER_SHIFT, XKB_KEY_K, setopacityfocus, {.f = +0.1f} },
++	{ MODKEY|WLR_MODIFIER_CTRL|WLR_MODIFIER_SHIFT, XKB_KEY_J, setopacityfocus, {.f = -0.1f} },
+ 	{ MODKEY,                    XKB_KEY_space,       setlayout,        {0} },
+ 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,       togglefloating,   {0} },
+ 	{ MODKEY,                    XKB_KEY_e,           togglefullscreen, {0} },
+--- a/dwl.c	2026-10-13 15:20:23.337458957 -0400
++++ b/dwl.c	2026-10-13 15:20:23.338458944 -0400
+@@ -159,6 +159,9 @@
+ 	unsigned int bw;
+ 	uint32_t tags;
+ 	int isfloating, isurgent, isfullscreen;
++	float opacity;
++	float opacity_focus;
++	float opacity_unfocus;
+ } Client;
+ 
+ typedef struct {
+@@ -247,6 +250,8 @@
+ 	const char *title;
+ 	uint32_t tags;
+ 	int isfloating;
++	float opacity_focus;
++	float opacity_unfocus;
+ 	int monitor;
+ } Rule;
+ 
+@@ -340,6 +345,7 @@
+ static void requestmonstate(struct wl_listener *listener, void *data);
+ static void resize(Client *c, struct wlr_box geo, int interact);
+ static void run(char *startup_cmd);
++static void scenebuffersetopacity(struct wlr_scene_buffer *buffer, int sx, int sy, void *user_data);
+ static void setcursor(struct wl_listener *listener, void *data);
+ static void setcursorshape(struct wl_listener *listener, void *data);
+ static void setfloating(Client *c, int floating);
+@@ -347,6 +353,8 @@
+ static void setlayout(const Arg *arg);
+ static void setmfact(const Arg *arg);
+ static void setmon(Client *c, Monitor *m, uint32_t newtags);
++static void setopacityunfocus(const Arg *arg);
++static void setopacityfocus(const Arg *arg);
+ static void setpsel(struct wl_listener *listener, void *data);
+ static void setsel(struct wl_listener *listener, void *data);
+ static void setup(void);
+@@ -532,6 +540,8 @@
+ 		if ((!r->title || strstr(title, r->title))
+ 				&& (!r->id || strstr(appid, r->id))) {
+ 			c->isfloating = r->isfloating;
++			c->opacity_unfocus = r->opacity_unfocus;
++			c->opacity_focus = r->opacity_focus;
+ 			newtags |= r->tags;
+ 			i = 0;
+ 			wl_list_for_each(m, &mons, link) {
+@@ -1225,6 +1235,10 @@
+ 	c = toplevel->base->data = ecalloc(1, sizeof(*c));
+ 	c->surface.xdg = toplevel->base;
+ 	c->bw = borderpx;
++	/* Set default opacity*/
++	c->opacity_unfocus = default_opacity_unfocus;
++	c->opacity_focus = default_opacity_focus;
++	c->opacity = default_opacity_unfocus;
+ 
+ 	LISTEN(&toplevel->base->surface->events.commit, &c->commit, commitnotify);
+ 	LISTEN(&toplevel->base->surface->events.map, &c->map, mapnotify);
+@@ -1537,6 +1551,7 @@
+ 		wl_list_insert(&fstack, &c->flink);
+ 		selmon = c->mon;
+ 		c->isurgent = 0;
++		c->opacity = c->opacity_focus;
+ 
+ 		/* Don't change border color if there is an exclusive focus or we are
+ 		 * handling a drag operation */
+@@ -1560,6 +1575,7 @@
+ 			client_set_border_color(focused_client, bordercolor);
+ 		if (s && s->mapped)
+ 			client_activate_surface(s, 0);
++		focused_client->opacity = focused_client->opacity_unfocus;
+ 		focused_client = NULL;
+ 	}
+ 	printstatus();
+@@ -2321,8 +2337,12 @@
+ 	/* This function is called every time an output is ready to display a frame,
+ 	 * generally at the output's refresh rate (e.g. 60Hz). */
+ 	Monitor *m = wl_container_of(listener, m, frame);
++	Client *c;
+ 	struct timespec now;
+ 
++	wl_list_for_each(c, &clients, link)
++		wlr_scene_node_for_each_buffer(&c->scene_surface->node, scenebuffersetopacity, c);
++
+ 	if (!wlr_scene_output_needs_frame(m->scene_output)) {
+ 		return;
+ 	}
+@@ -2454,6 +2474,15 @@
+ }
+ 
+ void
++scenebuffersetopacity(struct wlr_scene_buffer *buffer, int sx, int sy, void *data)
++{
++	Client *c = data;
++	/* xdg-popups are children of Client.scene, we do not have to worry about
++	 * messing with them. */
++	wlr_scene_buffer_set_opacity(buffer, c->isfullscreen ? 1 : c->opacity);
++}
++
++void
+ setcursor(struct wl_listener *listener, void *data)
+ {
+ 	/* This event is raised by the seat when a client provides a cursor image */
+@@ -2521,6 +2550,7 @@
+ 		 * client positions are set by the user and cannot be recalculated */
+ 		resize(c, c->prev, 0);
+ 	}
++	wlr_scene_node_for_each_buffer(&c->scene_surface->node, scenebuffersetopacity, c);
+ 	arrange(c->mon);
+ 	printstatus();
+ }
+@@ -2577,6 +2607,44 @@
+ 	focusclient(focustop(selmon), 1);
+ }
+ 
++
++void
++setopacityunfocus(const Arg *arg)
++{
++	Client *sel = focustop(selmon);
++	if (!sel)
++		return;
++
++	sel->opacity_unfocus += arg->f;
++	if (sel->opacity_unfocus > 1.0)
++		sel->opacity_unfocus = 1.0f;
++
++	if (sel->opacity_unfocus < 0.1)
++		sel->opacity_unfocus = 0.1f;
++
++	wlr_scene_node_for_each_buffer(&sel->scene_surface->node, scenebuffersetopacity, sel);
++}
++
++void
++setopacityfocus(const Arg *arg)
++{
++	Client *sel = focustop(selmon);
++	if (!sel)
++		return;
++
++	sel->opacity_focus += arg->f;
++	if (sel->opacity_focus > 1.0)
++		sel->opacity_focus = 1.0f;
++
++	if (sel->opacity_focus < 0.1)
++		sel->opacity_focus = 0.1f;
++
++	/* Change opacity from current client */
++	sel->opacity = sel->opacity_focus;
++
++	wlr_scene_node_for_each_buffer(&sel->scene_surface->node, scenebuffersetopacity, sel);
++}
++
+ void
+ setpsel(struct wl_listener *listener, void *data)
+ {
+@@ -3319,6 +3387,10 @@
+ 	c->surface.xwayland = xsurface;
+ 	c->type = X11;
+ 	c->bw = client_is_unmanaged(c) ? 0 : borderpx;
++	/* Set default opacity */
++	c->opacity_unfocus = default_opacity_unfocus;
++	c->opacity_focus = default_opacity_focus;
++	c->opacity = default_opacity_unfocus;
+ 
+ 	/* Listen to the various events it can emit */
+ 	LISTEN(&xsurface->events.associate, &c->associate, associatex11);

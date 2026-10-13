@@ -31,6 +31,8 @@
       den.aspects.sway
       den.aspects.waybar
       den.aspects.river
+      den.aspects.dwl
+      den.aspects.somebar
       den.aspects.niri
       den.aspects.eww
       den.aspects.direnv
