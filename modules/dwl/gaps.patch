@@ -1,0 +1,67 @@
+Simple fixed gaps for dwl 0.9's tile layout: gappx between windows and around the screen edge.
+Monocle is left untouched.
+
+--- a/dwl.c	2026-10-13 15:54:48.394244842 -0400
++++ b/dwl.c	2026-10-13 15:54:48.411608901 -0400
+@@ -2882,8 +2882,8 @@
+ void
+ tile(Monitor *m)
+ {
+-	unsigned int mw, my, ty;
+-	int i, n = 0;
++	unsigned int mw, my, ty, slot;
++	int i, n = 0, ax, ay, aw, ah, g = gappx;
+ 	Client *c;
+ 
+ 	wl_list_for_each(c, &clients, link)
+@@ -2892,22 +2892,32 @@
+ 	if (n == 0)
+ 		return;
+ 
++	/* usable area, inset by the outer gap */
++	ax = m->w.x + g;
++	ay = m->w.y + g;
++	aw = m->w.width - 2 * g;
++	ah = m->w.height - 2 * g;
++
+ 	if (n > m->nmaster)
+-		mw = m->nmaster ? (int)roundf(m->w.width * m->mfact) : 0;
++		mw = m->nmaster ? (int)roundf(aw * m->mfact) : 0;
+ 	else
+-		mw = m->w.width;
++		mw = aw;
+ 	i = my = ty = 0;
+ 	wl_list_for_each(c, &clients, link) {
+ 		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
+ 			continue;
+ 		if (i < m->nmaster) {
+-			resize(c, (struct wlr_box){.x = m->w.x, .y = m->w.y + my, .width = mw,
+-				.height = (m->w.height - my) / (MIN(n, m->nmaster) - i)}, 0);
+-			my += c->geom.height;
++			/* slots include the trailing gap, which the last one gives back */
++			slot = (ah + g - my) / (MIN(n, m->nmaster) - i);
++			resize(c, (struct wlr_box){.x = ax, .y = ay + my,
++				.width = (n > m->nmaster) ? mw - g / 2 : mw,
++				.height = slot - g}, 0);
++			my += slot;
+ 		} else {
+-			resize(c, (struct wlr_box){.x = m->w.x + mw, .y = m->w.y + ty,
+-				.width = m->w.width - mw, .height = (m->w.height - ty) / (n - i)}, 0);
+-			ty += c->geom.height;
++			slot = (ah + g - ty) / (n - i);
++			resize(c, (struct wlr_box){.x = ax + mw + (m->nmaster ? g / 2 : 0), .y = ay + ty,
++				.width = aw - mw - (m->nmaster ? g / 2 : 0), .height = slot - g}, 0);
++			ty += slot;
+ 		}
+ 		i++;
+ 	}
+--- a/config.def.h	2026-10-13 15:54:48.394244842 -0400
++++ b/config.def.h	2026-10-13 15:54:48.412152177 -0400
+@@ -7,6 +7,7 @@
+ static const int sloppyfocus               = 1;  /* focus follows mouse */
+ static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
+ static const unsigned int borderpx         = 1;  /* border pixel of windows */
++static const unsigned int gappx            = 8;  /* gap between windows and around the screen */
+ static const unsigned int snap             = 32; /* snap pixel */
+ static const float rootcolor[]             = COLOR(0x222222ff);
+ static const float bordercolor[]           = COLOR(0x444444ff);

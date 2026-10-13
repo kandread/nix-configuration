@@ -10,8 +10,12 @@
         dwl = pkgs.dwl.overrideAttrs (old: {
           # client-opacity-focus, ported to 0.9 (upstream's patch targets a
           # different base). Super+Ctrl+j/k adjust unfocused opacity,
-          # Super+Ctrl+Shift+J/K the focused one.
-          patches = (old.patches or [ ]) ++ [ ./dwl/client-opacity-focus.patch ];
+          # Super+Ctrl+Shift+J/K the focused one. gaps is our own small patch
+          # (gappx in config.def.h, default 8).
+          patches = (old.patches or [ ]) ++ [
+            ./dwl/client-opacity-focus.patch
+            ./dwl/gaps.patch
+          ];
           postPatch = (old.postPatch or "") + ''
             sed -i \
               -e 's/^#define MODKEY .*/#define MODKEY WLR_MODIFIER_LOGO/' \
@@ -23,9 +27,17 @@
 
         # dwl's `-s` command runs once the compositor socket exists, so this
         # takes the place of the autostart patch: background things first,
-        # then exec somebar so it inherits dwl's state pipe as its stdin.
+        # then exec somebar so it inherits dwl's state pipe as its stdin. The
+        # clock loop retries until somebar's socket exists, then updates the
+        # status text once a minute, on the minute.
         dwl-startup = pkgs.writeShellScript "dwl-startup" ''
           ${pkgs.swaybg}/bin/swaybg -i ${../assets/1r1kk9qi00961.png} -m fill &
+          (
+            while true; do
+              ${pkgs.somebar}/bin/somebar -c status "$(${pkgs.coreutils}/bin/date '+%a %d %b  %H:%M')"
+              ${pkgs.coreutils}/bin/sleep $((60 - 10#$(${pkgs.coreutils}/bin/date +%S)))
+            done
+          ) &
           exec ${pkgs.somebar}/bin/somebar
         '';
 
