@@ -1,0 +1,47 @@
+Center the focused floating window (Super+x), within the monitor's usable area.
+
+--- a/config.def.h
++++ b/config.def.h
+@@ -146,6 +146,7 @@
+ 	{ MODKEY,                    XKB_KEY_space,       setlayout,        {0} },
+ 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,       togglefloating,   {0} },
+ 	{ MODKEY,                    XKB_KEY_e,           togglefullscreen, {0} },
++	{ MODKEY,                    XKB_KEY_x,           movecenter,       {0} },
+ 	{ MODKEY,                    XKB_KEY_Down,        moveresizekb,     {.v = (int []){ 0, 40, 0, 0 }}},
+ 	{ MODKEY,                    XKB_KEY_Up,          moveresizekb,     {.v = (int []){ 0, -40, 0, 0 }}},
+ 	{ MODKEY,                    XKB_KEY_Right,       moveresizekb,     {.v = (int []){ 40, 0, 0, 0 }}},
+--- a/dwl.c
++++ b/dwl.c
+@@ -366,6 +366,7 @@
+ static void tile(Monitor *m);
+ static void togglefloating(const Arg *arg);
+ static void togglefullscreen(const Arg *arg);
++static void movecenter(const Arg *arg);
+ static void moveresizekb(const Arg *arg);
+ static void toggletag(const Arg *arg);
+ static void toggleview(const Arg *arg);
+@@ -3100,6 +3101,24 @@
+ }
+ 
+ void
++movecenter(const Arg *arg)
++{
++	Client *c = focustop(selmon);
++	struct wlr_box b;
++
++	if (!c || !c->mon || !c->isfloating)
++		return;
++
++	b = c->mon->w;
++	resize(c, (struct wlr_box){
++		.x = (b.width - c->geom.width) / 2 + b.x,
++		.y = (b.height - c->geom.height) / 2 + b.y,
++		.width = c->geom.width,
++		.height = c->geom.height,
++	}, 1);
++}
++
++void
+ moveresizekb(const Arg *arg)
+ {
+ 	Client *c = focustop(selmon);
