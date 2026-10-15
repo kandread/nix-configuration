@@ -8,6 +8,7 @@
         plantuml
         tree-sitter
         devenv
+        gh
       ];
     };
   };
