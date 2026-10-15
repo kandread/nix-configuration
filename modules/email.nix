@@ -32,12 +32,12 @@
         };
         notmuch = {
           enable = true;
-          new = {
-            tags = [ "new" ];
-            ignore = [ "Archive1" "Conversation History" "Unsent Messages" ];
-          };
-          search.excludeTags = [ "deleted" "spam" "archived" ];
-          extraConfig = {
+          settings = {
+            new = {
+              tags = [ "new" ];
+              ignore = [ "Archive1" "Conversation History" "Unsent Messages" ];
+            };
+            search.exclude_tags = [ "deleted" "spam" "archived" ];
             index = {
               "header.List" = "List-ID";
             };
