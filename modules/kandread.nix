@@ -19,6 +19,7 @@
       den.aspects.llm
       den.aspects.pdf
       den.aspects.media
+      den.aspects.gimp
       den.aspects.gpg
       den.aspects.firefox
       den.aspects.librewolf
