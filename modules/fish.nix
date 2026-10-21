@@ -39,6 +39,10 @@
           grep = "rg";
           m = "mkdir -p";
          };
+        shellAbbrs = {
+          nrs = "sudo nixos-rebuild switch --flake ~/.config/dendritic";
+          ngc = "sudo nix-collect-garbage -d";
+        };
         plugins = [
           {
             name = "z";
