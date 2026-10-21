@@ -7,34 +7,11 @@
         mbsync.enable = true;
         mu.enable = true;
         msmtp.enable = true;
-        afew = {
-          enable = true;
-          extraConfig = ''
-            [SpamFilter]
-            [KillThreadsFilter]
-            [ListMailsFilter]
-            [ArchiveSentMailsFilter]
-            sent_tag = sent
-            [FolderNameFilter]
-            maildir_separator = /
-            folder_transforms = Trash:deleted Junk:spam Drafts:draft Archive:archived Sent:sent Inbox:inbox
-            [Filter.1]
-            query = 'to:andreadis.jhm@ametsoc.org'
-            tags = +jhm
-            message = JHM messages
-            [MailMover]
-            folders = umass/Inbox umass/Sent
-            rename = True
-            umass/Inbox = 'tag:spam':umass/Junk 'tag:deleted':umass/Trash 'tag:sent':umass/Sent 'tag:draft':umass/Drafts 'tag:archived':umass/Archive
-            umass/Sent = 'tag:deleted':umass/Trash
-            [InboxFilter]
-          '';
-        };
         notmuch = {
           enable = true;
           settings = {
             new = {
-              tags = [ "new" ];
+              tags = [ ];
               ignore = [ "Archive1" "Conversation History" "Unsent Messages" ];
             };
             search.exclude_tags = [ "deleted" "spam" "archived" ];
@@ -43,13 +20,46 @@
             };
           };
           hooks = {
+            # Move files to the IMAP folder matching their tags before indexing
+            preNew = "${pkgs.notmuch-mailmover}/bin/notmuch-mailmover";
+            # Keep tags in sync with the folder each message lives in
             postNew = ''
-              afew -n -t
-              afew -n -m
+              notmuch tag --batch <<'EOF'
+              +inbox -- folder:umass/Inbox and not tag:inbox
+              -inbox -- tag:inbox and not folder:umass/Inbox
+              +sent -- folder:umass/Sent and not tag:sent
+              -sent -- tag:sent and not folder:umass/Sent
+              +draft -- folder:umass/Drafts and not tag:draft
+              -draft -- tag:draft and not folder:umass/Drafts
+              +archived -- folder:umass/Archive and not tag:archived
+              -archived -- tag:archived and not folder:umass/Archive
+              +spam -- folder:umass/Junk and not tag:spam
+              -spam -- tag:spam and not folder:umass/Junk
+              +deleted -- folder:umass/Trash and not tag:deleted
+              -deleted -- tag:deleted and not folder:umass/Trash
+              +jhm -- to:andreadis.jhm@ametsoc.org and not tag:jhm
+              EOF
             '';
           };
         };
       };
+
+      xdg.configFile."notmuch-mailmover/config.yaml".text = ''
+        maildir: ~/Mail
+        rename: true
+        rule_match_mode: unique
+        rules:
+          - folder: umass/Trash
+            query: tag:deleted
+          - folder: umass/Junk
+            query: tag:spam and not tag:deleted
+          - folder: umass/Drafts
+            query: tag:draft and not tag:deleted and not tag:spam
+          - folder: umass/Sent
+            query: tag:sent and not tag:deleted and not tag:spam and not tag:draft
+          - folder: umass/Archive
+            query: tag:archived and not tag:deleted and not tag:spam and not tag:draft and not tag:sent
+      '';
 
       services.mbsync = {
         enable = pkgs.stdenv.hostPlatform.isLinux;
