@@ -39,6 +39,7 @@
       den.aspects.eww
       den.aspects.direnv
       den.aspects.tmux
+      den.aspects.syncthing
     ];
 
     user = { ... }: {
