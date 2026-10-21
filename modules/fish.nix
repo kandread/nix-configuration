@@ -6,6 +6,24 @@
     };
 
     homeManager = { pkgs, ... }: {
+      programs.starship = {
+        enable = true;
+        enableFishIntegration = true;
+        settings = {
+          add_newline = false;
+          format = "$directory$git_branch$git_status$nix_shell$direnv$cmd_duration$line_break$character";
+          directory.truncation_length = 3;
+          git_branch.symbol = " ";
+          nix_shell.symbol = " ";
+          direnv.disabled = false;
+          cmd_duration.min_time = 3000;
+          character = {
+            success_symbol = "[❯](green)";
+            error_symbol = "[❯](red)";
+          };
+        };
+      };
+
       programs.fish = {
         enable = true;
         interactiveShellInit = ''
@@ -22,10 +40,6 @@
           m = "mkdir -p";
          };
         plugins = [
-          # {
-          #   name = "tide";
-          #   src = pkgs.fishPlugins.tide.src;
-          # }
           {
             name = "z";
             src = pkgs.fishPlugins.z.src;
