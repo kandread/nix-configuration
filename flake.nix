@@ -2,7 +2,8 @@
   description = "My dendritic NixOS/Nix-Darwin configuration";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # Pinned: khal fails to build on newer revisions (NixOS/nixpkgs#576161)
+    nixpkgs.url = "github:NixOS/nixpkgs/fe13242281a67641c0102cdb1087f0ebe586c7df";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     import-tree.url = "github:vic/import-tree";
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -40,6 +41,10 @@
       flake = false;
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
+    ewm = {
+      url = "git+https://codeberg.org/ezemtsov/ewm";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
