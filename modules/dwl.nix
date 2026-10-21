@@ -13,6 +13,9 @@
           # Super+Ctrl+Shift+J/K the focused one. gaps is our own small patch
           # (gappx in config.def.h, default 8).
           patches = (old.patches or [ ]) ++ [
+            # dwl-ipc-unstable-v2 for dwlb (dwl-patches, v0.9). Listed first
+            # (verified to apply in this order; the rest apply with offsets).
+            ./dwl/ipc.patch
             ./dwl/client-opacity-focus.patch
             ./dwl/gaps.patch
             # Super+BackSpace (rebound in postPatch from the patch's Super+s):
@@ -58,18 +61,24 @@
 
         # dwl's `-s` command runs once the compositor socket exists, so this
         # takes the place of the autostart patch: background things first,
-        # then exec somebar so it inherits dwl's state pipe as its stdin. The
-        # clock loop retries until somebar's socket exists, then updates the
-        # status text once a minute, on the minute.
+        # then exec dwlb. The clock loop updates the status text once a
+        # minute, on the minute; until dwlb is up the update is a no-op.
+        # Colors are the stylix gigavolt palette, as for the launcher; scale 2
+        # is downscaled by the compositor to the 1.5 output scale.
         dwl-startup = pkgs.writeShellScript "dwl-startup" ''
           ${pkgs.swaybg}/bin/swaybg -i ${../assets/1r1kk9qi00961.png} -m fill &
           (
             while true; do
-              ${pkgs.somebar}/bin/somebar -c status "$(${pkgs.coreutils}/bin/date '+%a %d %b  %H:%M')"
+              ${pkgs.dwlb}/bin/dwlb -status all "$(${pkgs.coreutils}/bin/date '+%a %d %b  %H:%M')"
               ${pkgs.coreutils}/bin/sleep $((60 - 10#$(${pkgs.coreutils}/bin/date +%S)))
             done
           ) &
-          exec ${pkgs.somebar}/bin/somebar
+          exec ${pkgs.dwlb}/bin/dwlb -ipc -hide-vacant-tags -scale 2 \
+            -font "MesloLGS Nerd Font:size=12" \
+            -active-fg-color "#f2fbff" -active-bg-color "#5a576e" \
+            -occupied-fg-color "#e9e7e1" -occupied-bg-color "#202126" \
+            -inactive-fg-color "#e9e7e1" -inactive-bg-color "#202126" \
+            -urgent-fg-color "#202126" -urgent-bg-color "#40bfff"
         '';
 
         dwl-session = pkgs.writeShellScriptBin "dwl-session" ''
