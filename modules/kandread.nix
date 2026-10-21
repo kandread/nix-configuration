@@ -32,8 +32,9 @@
       den.aspects.waybar
       den.aspects.river
       den.aspects.dwl
-      den.aspects.somebar
+      den.aspects.dwlb
       den.aspects.niri
+      den.aspects.ewm
       den.aspects.eww
       den.aspects.direnv
       den.aspects.tmux
