@@ -30,6 +30,7 @@
     (den.batteries.unfree [
       "zoom"
       "joypixels"
+      "firefox-esr-140-bin-unwrapped"
       "claude-code"
       "canon-cups-ufr2"
       "cups-toshiba-estudio"
@@ -42,7 +43,10 @@
       "xone-dongle-firmware"
       "facetimehd-calibration"
       "facetimehd-firmware" ])
-    (den.batteries.insecure [ "electron-39.8.10" ])
+    (den.batteries.insecure [
+      "electron-39.8.10"
+      "firefox-esr-140-bin-unwrapped-140.17.0esr"
+    ])
     den.batteries.define-user
   ];
 }
