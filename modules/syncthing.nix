@@ -1,10 +1,10 @@
 { ... }:
 let
   # Fill in once each machine has run syncthing at least once:
-  #   syncthing --device-id    (or Actions > Show ID in the web UI on :8384)
+  #   syncthing device-id  (or Actions > Show ID in the web UI on :8384)
   devices = {
     # workgland.id = "XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX";
-    # minigland.id = "XXXXXXX-...";
+    minigland.id = "TEKSICK-5YTN46C-OATG7QO-PUHPPRH-FLMM6TS-HEJHGEP-DDMMZOW-LOTKHQV";
     # x1gland.id   = "XXXXXXX-...";
   };
 in
