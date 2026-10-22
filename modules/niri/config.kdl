@@ -259,6 +259,9 @@ binds {
     Ctrl+Print { screenshot-screen; }
     Alt+Print { screenshot-window; }
 
+    Mod+Shift+4      hotkey-overlay-title="Screenshot region to ~/screenshot.png" { spawn-sh "grim -g \"$(slurp)\" ~/screenshot.png"; }
+    Mod+Ctrl+Shift+4 hotkey-overlay-title="Screenshot region to clipboard" { spawn-sh "grim -g \"$(slurp)\" - | wl-copy"; }
+
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 
     Mod+Shift+E { quit; }
