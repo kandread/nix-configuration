@@ -30,7 +30,6 @@
               +sent -- folder:umass/Sent and not tag:sent
               -sent -- tag:sent and not folder:umass/Sent
               +draft -- folder:umass/Drafts and not tag:draft
-              -draft -- tag:draft and not folder:umass/Drafts
               +archived -- folder:umass/Archive and not tag:archived
               -archived -- tag:archived and not folder:umass/Archive
               +spam -- folder:umass/Junk and not tag:spam
