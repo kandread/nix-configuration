@@ -11,11 +11,13 @@
         enableFishIntegration = true;
         settings = {
           add_newline = false;
-          format = "$directory$git_branch$git_status$nix_shell$direnv$cmd_duration$line_break$character";
+          format = "$directory$git_branch$git_status$nix_shell$cmd_duration$line_break$character";
           directory.truncation_length = 3;
           git_branch.symbol = " ";
-          nix_shell.symbol = " ";
-          direnv.disabled = false;
+          nix_shell = {
+            symbol = " ";
+            format = "[$symbol$name]($style) ";
+          };
           cmd_duration.min_time = 3000;
           character = {
             success_symbol = "[❯](green)";
@@ -29,6 +31,18 @@
         interactiveShellInit = ''
           set fish_greeting ""
           direnv hook fish | source
+
+          # Fuzzy-pick a directory from the z history and insert it at the cursor.
+          function _fzf_visited_dir
+            set -l token (commandline --current-token)
+            set -l dir (z -l 2>&1 | sort -rn | string replace -r '^\S+\s+' "" \
+              | fzf --height=40% --reverse --query="$token" --prompt="dir> ")
+            if test -n "$dir"
+              commandline --current-token --replace -- (string escape -- $dir)
+            end
+            commandline -f repaint
+          end
+          bind \e\cd _fzf_visited_dir
         '';
         shellAliases = {
           ls  = "eza --icons auto";
