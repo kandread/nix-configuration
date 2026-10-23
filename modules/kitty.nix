@@ -84,6 +84,9 @@
           "ctrl+minus" = "change_font_size all -1.0";
           "ctrl+0" = "change_font_size all 0";
 
+          # Send C-. as CSI u so tmux can use it as the prefix
+          "ctrl+period" = "send_text all \\x1b[46;5u";
+
           # Clipboard
           "ctrl+shift+c" = "copy_to_clipboard";
           "ctrl+shift+v" = "paste_from_clipboard";

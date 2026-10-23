@@ -70,6 +70,8 @@
             { key = "Key0"; mods = "Control"; action = "ResetFontSize"; }
             { key = "C"; mods = "Control|Shift"; action = "Copy"; }
             { key = "V"; mods = "Control|Shift"; action = "Paste"; }
+            # Alacritty doesn't speak modifyOtherKeys; send C-. as CSI u for the tmux prefix
+            { key = "Period"; mods = "Control"; chars = "\\u001b[46;5u"; }
           ];
         };
       };

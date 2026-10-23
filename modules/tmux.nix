@@ -7,7 +7,7 @@
         shell = "${pkgs.fish}/bin/fish";
         terminal = "tmux-256color";
         keyMode = "vi";
-        prefix = "C-a";
+        prefix = "C-.";
         baseIndex = 1;
         escapeTime = 0;
         historyLimit = 50000;
@@ -49,6 +49,10 @@
           set -as terminal-overrides ",xterm-256color:RGB"
           set -as terminal-overrides ",*:Smulx=\E[4::%p1%dm"
           set -as terminal-overrides ",*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m"
+
+          # Extended keys, needed for the C-. prefix
+          set -g extended-keys on
+          set -as terminal-features 'xterm*:extkeys'
 
           # Split panes with intuitive keys, keep current path
           bind | split-window -h -c "#{pane_current_path}"
