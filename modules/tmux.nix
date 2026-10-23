@@ -19,7 +19,6 @@
         plugins = with pkgs.tmuxPlugins; [
           sensible
           yank
-          vim-tmux-navigator
           {
             plugin = catppuccin;
             extraConfig = ''
@@ -61,7 +60,7 @@
           unbind '"'
           unbind %
 
-          # Vim-style pane navigation (works with vim-tmux-navigator)
+          # Vim-style pane navigation
           bind h select-pane -L
           bind j select-pane -D
           bind k select-pane -U
