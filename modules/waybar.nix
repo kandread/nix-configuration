@@ -93,9 +93,13 @@
             }
 
             /* waybar's dwl/tags has no hide-vacant option and GTK CSS has no
-               display:none, so collapse empty tags (unless focused/urgent)
-               to nothing instead. */
-            #tags button.empty:not(.focused):not(.urgent) {
+               display:none, so collapse unoccupied tags (unless focused or
+               urgent) to nothing instead. Not ".empty": waybar 0.15 adds it
+               to every tag (it tests clients & TAG_INACTIVE, which is 0).
+               The label needs its own rule because "*" above sets its size
+               directly, so font-size on the button never reaches it. */
+            #tags button:not(.occupied):not(.focused):not(.urgent),
+            #tags button:not(.occupied):not(.focused):not(.urgent) label {
               padding: 0;
               margin: 0;
               min-width: 0;
