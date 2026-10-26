@@ -58,11 +58,16 @@
       in
       {
         # dwl gets its own config file, started from dwl's startup script
-        # (dwl.nix): the same bar with dwl's tags and focused window title
-        # (dwl-ipc, from dwl's ipc patch) in place of the sway modules.
+        # (dwl.nix): the same bar with dwl's tags, layout symbol and focused
+        # window title (dwl-ipc, from dwl's ipc patch) in place of the sway
+        # modules. The layout indicator is a second dwl/window instance that
+        # shows only {layout} ([]=, ><>, [M]/[n], [D]/[Dn]).
         xdg.configFile."waybar/dwl.json".text = builtins.toJSON (
           removeAttrs mainBar [ "sway/workspaces" ] // {
-            modules-left = [ "dwl/tags" "dwl/window" ];
+            modules-left = [ "dwl/tags" "dwl/window#layout" "dwl/window" ];
+            "dwl/window#layout" = {
+              format = "{layout}";
+            };
           }
         );
 
@@ -116,6 +121,11 @@
 
             #window {
               padding: 0 10px;
+            }
+
+            #window.layout {
+              color: #40bfff;
+              padding: 0 6px;
             }
 
             #pulseaudio {

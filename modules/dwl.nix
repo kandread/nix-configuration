@@ -28,6 +28,8 @@
             # Super+x: center the focused floating window. dwl-patches'
             # version no longer applies to 0.9, so this is a trimmed rewrite.
             ./dwl/movecenter.patch
+            # Deck layout ([D], Super+Shift+d): own small patch, built on gaps.
+            ./dwl/deck.patch
           ];
           postPatch = (old.postPatch or "") + ''
             sed -i \
