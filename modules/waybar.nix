@@ -9,8 +9,8 @@
           height = 30;
 
           modules-left = [ "sway/workspaces" "sway/mode" ];
-          modules-center = [ "clock" ];
-          modules-right = [ "pulseaudio" "network" "cpu" "memory" "battery" "tray" ];
+          modules-center = [ ];
+          modules-right = [ "pulseaudio" "network" "cpu" "memory" "battery" "tray" "clock" ];
 
           "sway/workspaces" = {
             disable-scroll = true;
@@ -92,6 +92,18 @@
               border-radius: 6px;
             }
 
+            /* waybar's dwl/tags has no hide-vacant option and GTK CSS has no
+               display:none, so collapse empty tags (unless focused/urgent)
+               to nothing instead. */
+            #tags button.empty:not(.focused):not(.urgent) {
+              padding: 0;
+              margin: 0;
+              min-width: 0;
+              min-height: 0;
+              border: none;
+              font-size: 0;
+            }
+
             #tags button.urgent {
               background-color: #40bfff;
               color: #202126;
@@ -129,6 +141,10 @@
               color: #94e2d5;
               padding: 0 10px;
               margin: 0 4px;
+            }
+
+            #clock {
+              padding: 0 10px;
             }
 
             #tray {

@@ -36,9 +36,26 @@
               -e 's/{ NULL,       0.55f, 1,      1, /{ NULL,       0.55f, 1,      1.5f,/' \
               -e 's/XKB_KEY_s, \( *\)swapfocus,/XKB_KEY_BackSpace, swapfocus,/' \
               -e 's|"wmenu-run", NULL|${menuArgs}, NULL|' \
+              -e '/menucmd\[\] = /r ${extraCmds}' \
+              -e '/XKB_KEY_p, /r ${extraKeys}' \
               config.def.h
           '';
         });
+
+        # Extra spawn bindings, spliced into config.def.h by the sed above:
+        # Super+Alt+l locks the screen, Super+Shift+4 screenshots a region to
+        # ~/Pictures/Screenshots, Super+Ctrl+Shift+4 to the clipboard (same
+        # as the niri config). Shift+4 is XKB_KEY_dollar to dwl.
+        extraCmds = pkgs.writeText "dwl-extra-cmds.h" ''
+          static const char *lockcmd[] = { "${pkgs.runtimeShell}", "-c", "${pkgs.swaylock-effects}/bin/swaylock --clock --indicator --indicator-radius 100 --indicator-thickness 7 --indicator-idle-visible --effect-blur 7x5 --effect-vignette 0.5:0.5 --screenshots", NULL };
+          static const char *shotfilecmd[] = { "${pkgs.runtimeShell}", "-c", "mkdir -p ~/Pictures/Screenshots && ${pkgs.grim}/bin/grim -g \"$(${pkgs.slurp}/bin/slurp)\" ~/Pictures/Screenshots/$(date +%Y-%m-%d_%H-%M-%S).png", NULL };
+          static const char *shotclipcmd[] = { "${pkgs.runtimeShell}", "-c", "${pkgs.grim}/bin/grim -g \"$(${pkgs.slurp}/bin/slurp)\" - | ${pkgs.wl-clipboard}/bin/wl-copy", NULL };
+        '';
+        extraKeys = pkgs.writeText "dwl-extra-keys.h" ''
+          { MODKEY|WLR_MODIFIER_ALT,                    XKB_KEY_l,      spawn, {.v = lockcmd} },
+          { MODKEY|WLR_MODIFIER_SHIFT,                  XKB_KEY_dollar, spawn, {.v = shotfilecmd} },
+          { MODKEY|WLR_MODIFIER_CTRL|WLR_MODIFIER_SHIFT, XKB_KEY_dollar, spawn, {.v = shotclipcmd} },
+        '';
 
         # bemenu-run as the launcher: centered, vertical list, colors from the
         # stylix gigavolt palette (theming.nix). stylix lives in home-manager,
