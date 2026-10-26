@@ -59,12 +59,37 @@
           { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_o, spawn, {.v = shotclipcmd} },
         '';
 
-        # bemenu-run as the launcher: centered, vertical list, colors from the
-        # stylix gigavolt palette (theming.nix). stylix lives in home-manager,
-        # so the hex values are copied from the scheme file rather than read
-        # from config.lib.stylix.
+        # bemenu-run keeps no history, so the launcher is this wrapper instead:
+        # recently run commands first (most recent on top), then every other
+        # executable on PATH. Its arguments go straight to bemenu. History
+        # holds the last 50 distinct entries, arguments included.
+        bemenu-recent = pkgs.writeShellScript "bemenu-recent" ''
+          hist="''${XDG_CACHE_HOME:-$HOME/.cache}/bemenu-recent"
+          mkdir -p "$(dirname "$hist")"
+          touch "$hist"
+
+          sel=$(
+            {
+              cat "$hist"
+              IFS=:
+              # shellcheck disable=SC2086
+              find -L $PATH -maxdepth 1 -type f -executable -printf '%f\n' 2>/dev/null | sort -u
+            } | awk 'NF && !seen[$0]++' | ${pkgs.bemenu}/bin/bemenu "$@"
+          ) || exit
+          [ -n "$sel" ] || exit
+
+          { printf '%s\n' "$sel"; grep -vxF -- "$sel" "$hist"; } | head -n 50 > "$hist.tmp"
+          mv "$hist.tmp" "$hist"
+
+          exec ${pkgs.runtimeShell} -c "$sel"
+        '';
+
+        # Launcher look: centered, vertical list, colors from the stylix
+        # gigavolt palette (theming.nix). stylix lives in home-manager, so the
+        # hex values are copied from the scheme file rather than read from
+        # config.lib.stylix.
         menuArgs = lib.concatMapStringsSep ", " (a: "\"${a}\"") [
-          "${pkgs.bemenu}/bin/bemenu-run"
+          "${bemenu-recent}"
           "-i" "-c" "-l" "10" "-W" "0.35" "-B" "2" "-R" "8"
           "--fn" "MesloLGS Nerd Font 12"
           "--bdr" "#40bfff"

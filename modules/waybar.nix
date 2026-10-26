@@ -65,8 +65,13 @@
         xdg.configFile."waybar/dwl.json".text = builtins.toJSON (
           removeAttrs mainBar [ "sway/workspaces" ] // {
             modules-left = [ "dwl/tags" "dwl/window#layout" "dwl/window" ];
+            # Fixed 4-character width, centered: left alone, the label
+            # keeps the widest width it has ever had and right-aligns.
             "dwl/window#layout" = {
               format = "{layout}";
+              min-length = 4;
+              max-length = 4;
+              align = 0.5;
             };
           }
         );
@@ -124,8 +129,11 @@
             }
 
             #window.layout {
-              color: #40bfff;
+              background-color: #7c3aed;
+              color: #ffffff;
+              border-radius: 6px;
               padding: 0 6px;
+              margin: 0 4px;
             }
 
             #pulseaudio {
