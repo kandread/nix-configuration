@@ -7,7 +7,7 @@
         enable = true;
         wlr.enable = true;
         };
-      programs.dms-shell = {
+      programs.dux-shell = {
         enable = false;
         systemd.target = "wayland-session.target";
       };

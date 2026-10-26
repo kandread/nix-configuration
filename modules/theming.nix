@@ -20,6 +20,7 @@
           emacs.enable = false;
           waybar.enable = false;
           firefox.profileNames = [ "kandread" ];
+          librewolf.profileNames = [ "kandread" ];
         };
         cursor = {
           name = "Bibata-Modern-Classic";
