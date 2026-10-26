@@ -39,6 +39,10 @@
       url = "github:dmkhitaryan/river-next-nix-module";
       flake = false;
     };
+    oxbow = {
+      url = "github:3L0C/oxbow";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     llm-agents.url = "github:numtide/llm-agents.nix";
   };
 
