@@ -73,12 +73,16 @@
               ${pkgs.coreutils}/bin/sleep $((60 - 10#$(${pkgs.coreutils}/bin/date +%S)))
             done
           ) &
-          exec ${pkgs.dwlb}/bin/dwlb -ipc -hide-vacant-tags -scale 2 \
+          # -scale must stay last: dwlb's strtoul call for it writes its end
+          # pointer over the next argv entry, blanking whatever follows, and
+          # dwlb exits on the resulting empty option.
+          exec ${pkgs.dwlb}/bin/dwlb -ipc -hide-vacant-tags \
             -font "MesloLGS Nerd Font:size=12" \
             -active-fg-color "#f2fbff" -active-bg-color "#5a576e" \
             -occupied-fg-color "#e9e7e1" -occupied-bg-color "#202126" \
             -inactive-fg-color "#e9e7e1" -inactive-bg-color "#202126" \
-            -urgent-fg-color "#202126" -urgent-bg-color "#40bfff"
+            -urgent-fg-color "#202126" -urgent-bg-color "#40bfff" \
+            -scale 2
         '';
 
         dwl-session = pkgs.writeShellScriptBin "dwl-session" ''
