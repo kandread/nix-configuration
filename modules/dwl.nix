@@ -53,8 +53,8 @@
         '';
         extraKeys = pkgs.writeText "dwl-extra-keys.h" ''
           { MODKEY|WLR_MODIFIER_ALT,                    XKB_KEY_l,      spawn, {.v = lockcmd} },
-          { MODKEY|WLR_MODIFIER_SHIFT,                  XKB_KEY_dollar, spawn, {.v = shotfilecmd} },
-          { MODKEY|WLR_MODIFIER_CTRL|WLR_MODIFIER_SHIFT, XKB_KEY_dollar, spawn, {.v = shotclipcmd} },
+          { MODKEY,                  XKB_KEY_o, spawn, {.v = shotfilecmd} },
+          { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_o, spawn, {.v = shotclipcmd} },
         '';
 
         # bemenu-run as the launcher: centered, vertical list, colors from the
