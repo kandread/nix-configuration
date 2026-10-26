@@ -33,7 +33,6 @@
       den.aspects.waybar
       den.aspects.river
       den.aspects.dwl
-      den.aspects.dwlb
       den.aspects.niri
       den.aspects.eww
       den.aspects.direnv

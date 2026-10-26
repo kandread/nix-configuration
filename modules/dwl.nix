@@ -13,7 +13,7 @@
           # Super+Ctrl+Shift+J/K the focused one. gaps is our own small patch
           # (gappx in config.def.h, default 8).
           patches = (old.patches or [ ]) ++ [
-            # dwl-ipc-unstable-v2 for dwlb (dwl-patches, v0.9). Listed first
+            # dwl-ipc-unstable-v2 for waybar's dwl modules (dwl-patches, v0.9). Listed first
             # (verified to apply in this order; the rest apply with offsets).
             ./dwl/ipc.patch
             ./dwl/client-opacity-focus.patch
@@ -61,28 +61,12 @@
 
         # dwl's `-s` command runs once the compositor socket exists, so this
         # takes the place of the autostart patch: background things first,
-        # then exec dwlb. The clock loop updates the status text once a
-        # minute, on the minute; until dwlb is up the update is a no-op.
-        # Colors are the stylix gigavolt palette, as for the launcher; scale 2
-        # is downscaled by the compositor to the 1.5 output scale.
+        # then exec the bar. The bar is waybar with the dwl config written by
+        # the waybar aspect (waybar.nix); its dwl/tags and dwl/window modules
+        # talk to dwl over the ipc patch.
         dwl-startup = pkgs.writeShellScript "dwl-startup" ''
           ${pkgs.swaybg}/bin/swaybg -i ${../assets/1r1kk9qi00961.png} -m fill &
-          (
-            while true; do
-              ${pkgs.dwlb}/bin/dwlb -status all "$(${pkgs.coreutils}/bin/date '+%a %d %b  %H:%M')"
-              ${pkgs.coreutils}/bin/sleep $((60 - 10#$(${pkgs.coreutils}/bin/date +%S)))
-            done
-          ) &
-          # -scale must stay last: dwlb's strtoul call for it writes its end
-          # pointer over the next argv entry, blanking whatever follows, and
-          # dwlb exits on the resulting empty option.
-          exec ${pkgs.dwlb}/bin/dwlb -ipc -hide-vacant-tags \
-            -font "MesloLGS Nerd Font:size=12" \
-            -active-fg-color "#f2fbff" -active-bg-color "#5a576e" \
-            -occupied-fg-color "#e9e7e1" -occupied-bg-color "#202126" \
-            -inactive-fg-color "#e9e7e1" -inactive-bg-color "#202126" \
-            -urgent-fg-color "#202126" -urgent-bg-color "#40bfff" \
-            -scale 2
+          exec ${pkgs.waybar}/bin/waybar -c "$HOME/.config/waybar/dwl.json"
         '';
 
         dwl-session = pkgs.writeShellScriptBin "dwl-session" ''
