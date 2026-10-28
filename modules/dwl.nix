@@ -54,7 +54,7 @@
           static const char *shotclipcmd[] = { "${pkgs.runtimeShell}", "-c", "${pkgs.grim}/bin/grim -g \"$(${pkgs.slurp}/bin/slurp)\" - | ${pkgs.wl-clipboard}/bin/wl-copy", NULL };
         '';
         extraKeys = pkgs.writeText "dwl-extra-keys.h" ''
-          { MODKEY|WLR_MODIFIER_ALT,                    XKB_KEY_l,      spawn, {.v = lockcmd} },
+          { MODKEY,                    XKB_KEY_q,      spawn, {.v = lockcmd} },
           { MODKEY,                  XKB_KEY_o, spawn, {.v = shotfilecmd} },
           { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_o, spawn, {.v = shotclipcmd} },
         '';
