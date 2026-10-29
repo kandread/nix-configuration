@@ -30,6 +30,10 @@
             ./dwl/movecenter.patch
             # Deck layout ([D], Super+Shift+d): own small patch, built on gaps.
             ./dwl/deck.patch
+            # menu (dwl-patches, 0.8 version, applies to 0.9 with offsets):
+            # Super+o picks a window to focus, Super+Shift+o a layout. The
+            # menu commands are pointed at bemenu in postPatch.
+            ./dwl/menu.patch
           ];
           postPatch = (old.postPatch or "") + ''
             sed -i \
@@ -41,6 +45,9 @@
               -e '/menucmd\[\] = /r ${extraCmds}' \
               -e '/XKB_KEY_p, /r ${extraKeys}' \
               config.def.h
+            substituteInPlace config.def.h \
+              --replace-fail '"wmenu -i -l 10 -p Windows"' ${lib.escapeShellArg ''"${bemenuCmd} -p Windows"''} \
+              --replace-fail '"wmenu -i -p Layouts"' ${lib.escapeShellArg ''"${bemenuCmd} -p Layouts"''}
           '';
         });
 
@@ -55,8 +62,8 @@
         '';
         extraKeys = pkgs.writeText "dwl-extra-keys.h" ''
           { MODKEY,                    XKB_KEY_q,      spawn, {.v = lockcmd} },
-          { MODKEY,                  XKB_KEY_o, spawn, {.v = shotfilecmd} },
-          { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_o, spawn, {.v = shotclipcmd} },
+          { MODKEY,                  XKB_KEY_s, spawn, {.v = shotfilecmd} },
+          { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_s, spawn, {.v = shotclipcmd} },
         '';
 
         # bemenu-run keeps no history, so the launcher is this wrapper instead:
@@ -88,8 +95,7 @@
         # gigavolt palette (theming.nix). stylix lives in home-manager, so the
         # hex values are copied from the scheme file rather than read from
         # config.lib.stylix.
-        menuArgs = lib.concatMapStringsSep ", " (a: "\"${a}\"") [
-          "${bemenu-recent}"
+        menuStyle = [
           "-i" "-c" "-l" "10" "-W" "0.35" "-B" "2" "-R" "8"
           "--fn" "MesloLGS Nerd Font 12"
           "--bdr" "#40bfff"
@@ -102,6 +108,10 @@
           "--cb" "#e9e7e1" "--cf" "#202126"
           "--fbb" "#202126" "--fbf" "#e9e7e1"
         ];
+        menuArgs = lib.concatMapStringsSep ", " (a: "\"${a}\"") ([ "${bemenu-recent}" ] ++ menuStyle);
+        # Same look as a single sh command line, for the menu patch (which
+        # pipes its own entries into it, so it must be plain bemenu).
+        bemenuCmd = "${pkgs.bemenu}/bin/bemenu ${lib.escapeShellArgs menuStyle}";
 
         # dwl's `-s` command runs once the compositor socket exists, so this
         # takes the place of the autostart patch: background things first,
