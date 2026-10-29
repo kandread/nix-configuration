@@ -113,12 +113,38 @@
         # pipes its own entries into it, so it must be plain bemenu).
         bemenuCmd = "${pkgs.bemenu}/bin/bemenu ${lib.escapeShellArgs menuStyle}";
 
+        # xdg-desktop-portal-wlr chooser (see the xdpw config below): lists the
+        # outputs and the open windows in bemenu and prints the choice in the
+        # "Monitor: <output>" / "Window: <toplevel identifier>" form xdpw
+        # expects. Printing nothing declines the share.
+        screencast-chooser = pkgs.writeShellScript "dwl-screencast-chooser" ''
+          entries=$(
+            {
+              ${pkgs.wlr-randr}/bin/wlr-randr --json |
+                ${pkgs.jq}/bin/jq -r '.[] | "Monitor: \(.name)\tMonitor: \(.name)"'
+              ${pkgs.lswt}/bin/lswt --json |
+                ${pkgs.jq}/bin/jq -r '.toplevels[] | "Window: \(.title) | \(."app-id")\tWindow: \(.identifier)"'
+            } 2>/dev/null
+          )
+          sel=$(printf '%s\n' "$entries" | cut -f1 | ${bemenuCmd} -p Share) || exit 0
+          [ -n "$sel" ] || exit 0
+          printf '%s\n' "$entries" | awk -F'\t' -v s="$sel" '$1 == s { print $2; exit }'
+        '';
+
         # dwl's `-s` command runs once the compositor socket exists, so this
         # takes the place of the autostart patch: background things first,
         # then exec the bar. The bar is waybar with the dwl config written by
         # the waybar aspect (waybar.nix); its dwl/tags and dwl/window modules
         # talk to dwl over the ipc patch.
         dwl-startup = pkgs.writeShellScript "dwl-startup" ''
+          # Portals are D-Bus activated, so they need to see the session's
+          # environment (xdpw needs WAYLAND_DISPLAY and XDG_CURRENT_DESKTOP).
+          export XDG_CURRENT_DESKTOP=dwl
+          ${pkgs.systemd}/bin/systemctl --user import-environment \
+            WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_RUNTIME_DIR DISPLAY
+          ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd \
+            WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_RUNTIME_DIR DISPLAY
+
           ${pkgs.swaybg}/bin/swaybg -i ${../assets/1r1kk9qi00961.png} -m fill &
           exec ${pkgs.waybar}/bin/waybar -c "$HOME/.config/waybar/dwl.json"
         '';
@@ -146,6 +172,21 @@
       in
       {
         services.displayManager.sessionPackages = [ dwl-session-file ];
+
+        # Screen sharing: route ScreenCast/Screenshot to xdpw for the dwl
+        # desktop (no upstream dwl-portals.conf exists), and replace its
+        # monitor-only slurp chooser with one that also offers windows.
+        xdg.portal.config.dwl = {
+          default = [ "gtk" ];
+          "org.freedesktop.impl.portal.Inhibit" = [ "none" ];
+          "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
+          "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
+        };
+        environment.etc."xdg/xdg-desktop-portal-wlr/dwl".text = ''
+          [screencast]
+          chooser_type=simple
+          chooser_cmd=${screencast-chooser}
+        '';
 
         # Stock bindings: Super+p runs the launcher (menucmd), Super+Shift+Return foot.
         environment.systemPackages = [
