@@ -144,13 +144,19 @@
             WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_RUNTIME_DIR DISPLAY
           ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd \
             WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_RUNTIME_DIR DISPLAY
+          # Brings up graphical-session.target, which xdg-desktop-portal (and
+          # every graphical-session user unit) requires before it will start.
+          ${pkgs.systemd}/bin/systemctl --user start dwl-session.target
 
           ${pkgs.swaybg}/bin/swaybg -i ${../assets/1r1kk9qi00961.png} -m fill &
           exec ${pkgs.waybar}/bin/waybar -c "$HOME/.config/waybar/dwl.json"
         '';
 
+        # Not exec'd, so the session target (and graphical-session.target with
+        # it) goes down when dwl exits instead of lingering into the next login.
         dwl-session = pkgs.writeShellScriptBin "dwl-session" ''
-          exec ${dwl}/bin/dwl -s ${dwl-startup}
+          ${dwl}/bin/dwl -s ${dwl-startup}
+          ${pkgs.systemd}/bin/systemctl --user stop dwl-session.target
         '';
 
         # GDM finds sessions through passthru.providedSessions. The desktop
@@ -172,6 +178,15 @@
       in
       {
         services.displayManager.sessionPackages = [ dwl-session-file ];
+
+        # graphical-session.target refuses manual starts; a compositor brings
+        # it up by starting a target bound to it (same shape as sway's).
+        systemd.user.targets.dwl-session = {
+          description = "dwl compositor session";
+          bindsTo = [ "graphical-session.target" ];
+          wants = [ "graphical-session-pre.target" ];
+          after = [ "graphical-session-pre.target" ];
+        };
 
         # Screen sharing: route ScreenCast/Screenshot to xdpw for the dwl
         # desktop (no upstream dwl-portals.conf exists), and replace its
