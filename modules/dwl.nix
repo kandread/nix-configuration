@@ -34,6 +34,14 @@
             # Super+o picks a window to focus, Super+Shift+o a layout. The
             # menu commands are pointed at bemenu in postPatch.
             ./dwl/menu.patch
+            # swallow (dwl-patches v0.8, hand-ported to 0.9 on top of the
+            # patches above): graphical programs started from foot replace
+            # it until they exit. Super+a swallows/unswallows the previously
+            # focused window, Super+Shift+a toggles automatic swallowing.
+            ./dwl/swallow.patch
+            # sticky (dwl-patches v0.8, hand-ported): togglesticky shows a
+            # window on every tag. Bound to Super+y in extraKeys below.
+            ./dwl/sticky.patch
           ];
           postPatch = (old.postPatch or "") + ''
             sed -i \
@@ -64,6 +72,7 @@
           { MODKEY,                    XKB_KEY_q,      spawn, {.v = lockcmd} },
           { MODKEY,                  XKB_KEY_s, spawn, {.v = shotfilecmd} },
           { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_s, spawn, {.v = shotclipcmd} },
+          { MODKEY,                    XKB_KEY_y, togglesticky, {0} },
         '';
 
         # bemenu-run keeps no history, so the launcher is this wrapper instead:
