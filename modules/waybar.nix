@@ -1,8 +1,23 @@
 { ... }:
 {
   den.aspects.waybar = {
-    homeManager = { ... }:
+    homeManager = { pkgs, ... }:
       let
+        # Prints dwl's keyboard layout (written by dwl's kblayout patch) as
+        # a short code, then again on every change.
+        kblayout = pkgs.writeShellScript "waybar-dwl-kblayout" ''
+          f="$XDG_RUNTIME_DIR/dwl-kblayout"
+          show() {
+            case "$(cat "$f" 2>/dev/null)" in
+              "English (US)") echo US ;;
+              Greek) echo GR ;;
+              *) cat "$f" 2>/dev/null ;;
+            esac
+          }
+          show
+          ${pkgs.inotify-tools}/bin/inotifywait -mq -e close_write "$f" |
+            while read -r _; do show; done
+        '';
         mainBar = {
           layer = "top";
           position = "top";
@@ -65,6 +80,11 @@
         xdg.configFile."waybar/dwl.json".text = builtins.toJSON (
           removeAttrs mainBar [ "sway/workspaces" ] // {
             modules-left = [ "dwl/tags" "dwl/window#layout" "dwl/window" ];
+            modules-right = [ "custom/kblayout" ] ++ mainBar.modules-right;
+            "custom/kblayout" = {
+              exec = "${kblayout}";
+              format = " {}";
+            };
             # Fixed 4-character width, centered: left alone, the label
             # keeps the widest width it has ever had and right-aligns.
             "dwl/window#layout" = {

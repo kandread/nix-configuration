@@ -42,6 +42,10 @@
             # sticky (dwl-patches v0.8, hand-ported): togglesticky shows a
             # window on every tag. Bound to Super+y in extraKeys below.
             ./dwl/sticky.patch
+            # kblayout (own patch): writes the active xkb layout's name to
+            # $XDG_RUNTIME_DIR/dwl-kblayout on change, for waybar's
+            # custom/kblayout module (waybar.nix).
+            ./dwl/kblayout.patch
           ];
           postPatch = (old.postPatch or "") + ''
             sed -i \
@@ -164,6 +168,10 @@
         # Not exec'd, so the session target (and graphical-session.target with
         # it) goes down when dwl exits instead of lingering into the next login.
         dwl-session = pkgs.writeShellScriptBin "dwl-session" ''
+          # dwl's xkb_rules is empty, so libxkbcommon reads these. Both Shifts
+          # together toggle between US and Greek.
+          export XKB_DEFAULT_LAYOUT=us,gr
+          export XKB_DEFAULT_OPTIONS=grp:shifts_toggle
           ${dwl}/bin/dwl -s ${dwl-startup}
           ${pkgs.systemd}/bin/systemctl --user stop dwl-session.target
         '';
