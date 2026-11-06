@@ -34,8 +34,9 @@
               -archived -- tag:archived and not folder:umass/Archive
               +spam -- folder:umass/Junk and not tag:spam
               -spam -- tag:spam and not folder:umass/Junk
-              +deleted -- folder:umass/Trash and not tag:deleted
+              +deleted -- folder:umass/Trash and not folder:umass/Inbox and not tag:deleted
               -deleted -- tag:deleted and not folder:umass/Trash
+              -deleted -- tag:deleted and folder:umass/Trash and folder:umass/Inbox
               +jhm -- to:andreadis.jhm@ametsoc.org and not tag:jhm
               EOF
             '';
@@ -49,7 +50,7 @@
         rule_match_mode: unique
         rules:
           - folder: umass/Trash
-            query: tag:deleted
+            query: tag:deleted and not (folder:umass/Trash and folder:umass/Inbox)
           - folder: umass/Junk
             query: tag:spam and not tag:deleted
           - folder: umass/Drafts
