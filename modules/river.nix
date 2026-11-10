@@ -14,9 +14,14 @@
 
         argen = pkgs.callPackage "${inputs.river-next}/window-managers/argen/package.nix" { zig = pkgs.zig_0_16; };
 
+        # nixpkgs' ironbar 0.19.1 sets LIBGIT2_NO_VENDOR but doesn't list
+        # libgit2 as an input, so libgit2-sys fails to find it.
+        ironbar = pkgs.ironbar.overrideAttrs (old: {
+          buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.libgit2 ];
+        });
         ironbar-cu1 = pkgs.writeShellApplication {
           name = "ironbar-cu1";
-          runtimeInputs = [ argen pkgs.jq pkgs.ironbar ];
+          runtimeInputs = [ argen pkgs.jq ironbar ];
           text = ''
             context=$(argenctl context list --json | jq -r '.[] | select(.current == true) | .name')
 
@@ -68,7 +73,7 @@
         environment.systemPackages = [
           pkgs.python3
           oxbow
-          pkgs.ironbar
+          ironbar
           ironbar-cu1
         ];
 

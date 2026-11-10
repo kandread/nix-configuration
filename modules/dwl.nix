@@ -51,6 +51,7 @@
             sed -i \
               -e 's/^#define MODKEY .*/#define MODKEY WLR_MODIFIER_LOGO/' \
               -e 's/natural_scrolling = 0;/natural_scrolling = 1;/' \
+              -e '/^\t{ "foot", /a\\t{ "mpv",              NULL,       0,            1,           0,       0,          1.00,         1.00,           -1 },\n\t{ "zoom",             "Meeting",  0,            1,           0,       0,          1.00,         1.00,           -1 },' \
               -e 's/{ NULL,       0.55f, 1,      1, /{ NULL,       0.55f, 1,      1.5f,/' \
               -e 's/XKB_KEY_s, \( *\)swapfocus,/XKB_KEY_BackSpace, swapfocus,/' \
               -e 's|"wmenu-run", NULL|${menuArgs}, NULL|' \
