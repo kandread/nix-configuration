@@ -1,0 +1,40 @@
+diff --git a/src/config/bar.zig b/src/config/bar.zig
+index c9bf99d..9afd14e 100644
+--- a/src/config/bar.zig
++++ b/src/config/bar.zig
+@@ -37,6 +37,8 @@ scheme: Scheme,
+ 
+ tags: ?struct {
+     tags: []const []const u8,
++    // only show tags that are focused or have windows
++    hide_vacant: bool = false,
+     click: meta.enum_struct(
+         kwm.Button,
+         ?kwm.BindingAction
+diff --git a/src/kwm/bar.zig b/src/kwm/bar.zig
+index f692148..66c35fe 100644
+--- a/src/kwm/bar.zig
++++ b/src/kwm/bar.zig
+@@ -370,8 +370,11 @@ fn render_static_component(self: *Self) void {
+     const pad = self.get_pad();
+     const w: u16 = blk: {
+         var width: u16 = 0;
+-        for (texts.items) |text| {
+-            width += @intCast(render_.utils.text_width(text)+pad);
++        for (0.., texts.items) |i, text| {
++            const tag: u32 = @as(u32, @intCast(1)) << @as(u5, @intCast(i));
++            if (!(area.hide_vacant and (self.output.tag | self.output.occupied_tags()) & tag == 0)) {
++                width += @intCast(render_.utils.text_width(text)+pad);
++            }
+             self.static_splits.appendBounded(@intCast(width)) catch unreachable;
+         }
+         break :blk width;
+@@ -406,6 +409,8 @@ fn render_static_component(self: *Self) void {
+ 
+         const is_focused = self.output.tag & tag != 0;
+ 
++        if (area.hide_vacant and (self.output.tag | windows_tag) & tag == 0) continue;
++
+         const tag_width: u16 = @intCast(render_.utils.text_width(text)+pad); 
+         defer x += @intCast(tag_width);
+ 

@@ -12,6 +12,14 @@
         river-next-module = { config, lib, pkgs, ... }:
           import "${inputs.river-next}/river-module.nix" { inherit config lib; pkgs = zig16 pkgs; };
 
+        # kwm with a `.bar.tags.hide_vacant` option (patch in kwm/), which
+        # upstream lacks: only focused or occupied tags are drawn.
+        kwm = (pkgs.callPackage "${inputs.river-next}/window-managers/kwm/package.nix" {
+          zig = pkgs.zig_0_16;
+        }).overrideAttrs (old: {
+          patches = (old.patches or [ ]) ++ [ ./kwm/hide-vacant.patch ];
+        });
+
         argen = pkgs.callPackage "${inputs.river-next}/window-managers/argen/package.nix" { zig = pkgs.zig_0_16; };
 
         # nixpkgs' ironbar 0.19.1 sets LIBGIT2_NO_VENDOR but doesn't list
@@ -80,6 +88,7 @@
         programs.river-next = {
           enable = true;
           windowManagers = [ "kwm" "argen" ];
+          windowManagerOverrides = { inherit kwm; };
         };
       };
   };

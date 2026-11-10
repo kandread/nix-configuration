@@ -32,6 +32,7 @@
       den.aspects.sway
       den.aspects.waybar
       den.aspects.river
+      den.aspects.kwm
       den.aspects.dwl
       den.aspects.niri
       den.aspects.eww
