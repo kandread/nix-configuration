@@ -12,10 +12,23 @@ index c9bf99d..9afd14e 100644
          kwm.Button,
          ?kwm.BindingAction
 diff --git a/src/kwm/bar.zig b/src/kwm/bar.zig
-index f692148..66c35fe 100644
+index f692148..a15e278 100644
 --- a/src/kwm/bar.zig
 +++ b/src/kwm/bar.zig
-@@ -370,8 +370,11 @@ fn render_static_component(self: *Self) void {
+@@ -209,7 +209,12 @@ pub fn render(self: *Self) void {
+     if (self.static_component_damaged or self.background_damaged) {
+         defer self.static_component_damaged = false;
+ 
++        // with hide_vacant the tags width can change, and the dynamic
++        // component is only repositioned (and the parent committed) by
++        // render_background
++        const old_width = self.static_component_width();
+         self.render_static_component();
++        if (self.static_component_width() != old_width) self.background_damaged = true;
+     }
+ 
+     if (self.dynamic_component_damaged or self.background_damaged) {
+@@ -370,8 +375,11 @@ fn render_static_component(self: *Self) void {
      const pad = self.get_pad();
      const w: u16 = blk: {
          var width: u16 = 0;
@@ -29,7 +42,7 @@ index f692148..66c35fe 100644
              self.static_splits.appendBounded(@intCast(width)) catch unreachable;
          }
          break :blk width;
-@@ -406,6 +409,8 @@ fn render_static_component(self: *Self) void {
+@@ -406,6 +414,8 @@ fn render_static_component(self: *Self) void {
  
          const is_focused = self.output.tag & tag != 0;
  
