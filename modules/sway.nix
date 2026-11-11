@@ -4,7 +4,11 @@
     nixos = { ... }: {
       programs.sway.enable = true;
     };
-    homeManager = { config, pkgs, ... }: {
+    homeManager = { config, pkgs, ... }:
+    let
+      # Same lock command as dwl, daemonized for swayidle.
+      lockcmd = "${pkgs.swaylock-effects}/bin/swaylock -f --clock --indicator --indicator-radius 100 --indicator-thickness 7 --indicator-idle-visible --effect-blur 7x5 --effect-vignette 0.5:0.5 --screenshots";
+    in {
       programs.swaylock = {
 enable = true;
 package = pkgs.swaylock-effects;
@@ -15,7 +19,7 @@ package = pkgs.swaylock-effects;
         timeouts = [
           {
             timeout = 300;
-            command = "${pkgs.swaylock}/bin/swaylock -f";
+            command = lockcmd;
           }
           # {
           #   timeout = 600;
@@ -24,7 +28,7 @@ package = pkgs.swaylock-effects;
           # }
         ];
         events = {
-          before-sleep = "${pkgs.swaylock}/bin/swaylock -f";
+          before-sleep = lockcmd;
         };
       };
 
@@ -137,7 +141,7 @@ package = pkgs.swaylock-effects;
         # keybinding set instead of merging with it.
         extraConfig = ''
           bindsym Mod4+Shift+s sticky toggle
-          bindsym Mod4+Shift+x exec swaylock -f
+          bindsym Mod4+Shift+x exec ${lockcmd}
           bindsym Mod4+x exec grim -g "$(slurp)" | wl-copy
         '';
       };
