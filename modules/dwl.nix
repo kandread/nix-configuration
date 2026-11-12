@@ -142,7 +142,7 @@
           )
           sel=$(printf '%s\n' "$entries" | cut -f1 | ${bemenuCmd} -p Share) || exit 0
           [ -n "$sel" ] || exit 0
-          printf '%s\n' "$entries" | awk -F'\t' -v s="$sel" '$1 == s { print $2; exit }'
+          printf '%s\n' "$entries" | ${pkgs.gawk}/bin/awk -F'\t' -v s="$sel" '$1 == s { print $2; exit }'
         '';
 
         # dwl's `-s` command runs once the compositor socket exists, so this
@@ -154,10 +154,15 @@
           # Portals are D-Bus activated, so they need to see the session's
           # environment (xdpw needs WAYLAND_DISPLAY and XDG_CURRENT_DESKTOP).
           export XDG_CURRENT_DESKTOP=dwl
+          export XDG_SESSION_TYPE=wayland
+          export XDG_SESSION_DESKTOP=dwl
+          export DESKTOP_SESSION=dwl
           ${pkgs.systemd}/bin/systemctl --user import-environment \
-            WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_RUNTIME_DIR DISPLAY
+            WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE \
+            XDG_SESSION_DESKTOP DESKTOP_SESSION XDG_RUNTIME_DIR DISPLAY
           ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd \
-            WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_RUNTIME_DIR DISPLAY
+            WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE \
+            XDG_SESSION_DESKTOP DESKTOP_SESSION XDG_RUNTIME_DIR DISPLAY
           # Brings up graphical-session.target, which xdg-desktop-portal (and
           # every graphical-session user unit) requires before it will start.
           ${pkgs.systemd}/bin/systemctl --user start dwl-session.target
@@ -215,11 +220,15 @@
           "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
           "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
         };
-        environment.etc."xdg/xdg-desktop-portal-wlr/dwl".text = ''
-          [screencast]
-          chooser_type=simple
-          chooser_cmd=${screencast-chooser}
-        '';
+        # NixOS starts xdpw with an explicit --config, so a per-desktop file
+        # under /etc/xdg/xdg-desktop-portal-wlr/ is never read; set it here.
+        # This applies to every wlroots session (the chooser only needs
+        # wlr-randr and lswt, which work under river too).
+        # (river-next's module also sets chooser_cmd, hence mkForce.)
+        xdg.portal.wlr.settings.screencast = {
+          chooser_type = "simple";
+          chooser_cmd = lib.mkForce "${screencast-chooser}";
+        };
 
         # Stock bindings: Super+p runs the launcher (menucmd), Super+Shift+Return foot.
         environment.systemPackages = [
