@@ -73,14 +73,103 @@
         '';
 
         # Feeds kwm's bar status (the fifo is created by tmpfiles below, since
-        # kwm only opens it and never creates it).
+        # kwm only opens it and never creates it): volume, network, RAM,
+        # battery (only where there is one) and the clock. Icons are drawn in
+        # the accent colour with kwm's ^#RRGGBBAA / ^#! markup. kwm keeps at
+        # most 256 bytes of a status line, markup included, so the SSID is
+        # cut short.
+        #
+        # Redraws every 5 s, and at once when PipeWire reports a sink change
+        # (volume keys) or NetworkManager reports a state change.
         status = pkgs.writeShellScript "kwm-status" ''
           fifo="$XDG_RUNTIME_DIR/kwm-status"
           [ -p "$fifo" ] || exit 1
           exec 3<>"$fifo"
+
+          ic() { printf '^#40bfffff%s^#! ' "$1"; }
+          sep='  '
+
+          volume() {
+            local v
+            v=$(${pkgs.wireplumber}/bin/wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null) || return
+            case $v in
+              *MUTED*) printf '%smuted' "$(ic $'\Uf0581')" ;;
+              *) printf '%s%s%%' "$(ic $'\Uf057e')" "$(awk '{ printf "%d", $2 * 100 + 0.5 }' <<<"$v")" ;;
+            esac
+          }
+
+          network() {
+            local type state conn wifi="" wired=""
+            while IFS=: read -r type state conn; do
+              [ "$state" = connected ] || continue
+              case $type in
+                ethernet) wired=1 ;;
+                wifi) [ -n "$wifi" ] || wifi=''${conn//\\:/:} ;;
+              esac
+            done < <(${pkgs.networkmanager}/bin/nmcli -t -f TYPE,STATE,CONNECTION dev 2>/dev/null)
+            if [ -n "$wired" ]; then
+              printf '%swired' "$(ic $'\Uf0200')"
+            elif [ -n "$wifi" ]; then
+              [ "''${#wifi}" -gt 16 ] && wifi="''${wifi:0:15}…"
+              printf '%s%s' "$(ic $'\Uf05a9')" "$wifi"
+            else
+              printf '%soffline' "$(ic $'\Uf05aa')"
+            fi
+          }
+
+          memory() {
+            printf '%s%s' "$(ic $'\Uf035b')" \
+              "$(awk '/^MemTotal:/ { t = $2 } /^MemAvailable:/ { a = $2 }
+                      END { printf "%.1fG", (t - a) / 1048576 }' /proc/meminfo)"
+          }
+
+          battery() {
+            local b cap st icon
+            for b in /sys/class/power_supply/BAT*; do
+              [ -r "$b/capacity" ] || continue
+              cap=$(<"$b/capacity") st=$(<"$b/status")
+              if [ "$st" = Charging ]; then icon=$'\Uf0084'
+              elif [ "$cap" -ge 90 ]; then icon=$'\Uf0079'
+              elif [ "$cap" -ge 70 ]; then icon=$'\Uf0081'
+              elif [ "$cap" -ge 50 ]; then icon=$'\Uf007f'
+              elif [ "$cap" -ge 30 ]; then icon=$'\Uf007d'
+              elif [ "$cap" -ge 15 ]; then icon=$'\Uf007b'
+              else icon=$'\Uf008e'
+              fi
+              if [ "$st" != Charging ] && [ "$cap" -lt 15 ]; then
+                printf '%s^#ff5f5fff%s%%^#!%s' "$(ic "$icon")" "$cap" "$sep"
+              else
+                printf '%s%s%%%s' "$(ic "$icon")" "$cap" "$sep"
+              fi
+              return
+            done
+          }
+
+          draw() {
+            printf '%s%s%s%s%s%s%s%s\n' \
+              "$(volume)" "$sep" "$(network)" "$sep" "$(memory)" "$sep" \
+              "$(battery)" "$(date '+%a %d %b  %H:%M')" >&3
+          }
+
+          # One line per event from either monitor wakes the loop early.
+          exec 4< <(
+            ${pkgs.pulseaudio}/bin/pactl subscribe 2>/dev/null |
+              grep --line-buffered -E "'change' on (sink|server)" &
+            ${pkgs.networkmanager}/bin/nmcli monitor 2>/dev/null &
+            wait
+          )
+          feeder=$!
+          trap 'kill "$feeder" 2>/dev/null' EXIT
+
           while :; do
-            date '+%a %d %b  %H:%M' >&3
-            sleep 20
+            draw
+            read -r -t 5 -u 4 _
+            case $? in
+              # Coalesce bursts (a held volume key sends many events).
+              0) while read -r -t 0.1 -u 4 _; do :; done ;;
+              # Both monitors gone (EOF): fall back to plain polling.
+              1) sleep 5 ;;
+            esac
           done
         '';
 
@@ -157,7 +246,9 @@
                   },
                   .status = .{
                       .data = .{ .fifo = "''${XDG_RUNTIME_DIR}/kwm-status" },
+                      // kwm only takes clicks on the status area as a whole.
                       .click = .{
+                          .left = .{ .spawn = .{ .argv = .{ "${pkgs.pavucontrol}/bin/pavucontrol" } } },
                           .middle = .{ .spawn = .{ .argv = .{ "foot" } } },
                       },
                   },
