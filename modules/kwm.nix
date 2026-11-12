@@ -215,6 +215,11 @@
 
               .xcursor_theme = .{ .name = "Bibata-Modern-Classic", .size = 24 },
 
+              // Focus follows the pointer, and the pointer jumps to windows
+              // focused from the keyboard, so the two stay in sync.
+              .sloppy_focus = true,
+              .cursor_warp = .on_focus_changed,
+
               // swaybg paints the wallpaper; a solid background would cover it.
               .background = null,
 
