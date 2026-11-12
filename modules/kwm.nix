@@ -6,6 +6,14 @@
   den.aspects.kwm = {
     homeManager = { pkgs, lib, ... }:
       let
+        # bemenu asks for its -W width and assumes the compositor has answered
+        # by the end of a roundtrip. river 0.4 configures layer surfaces
+        # asynchronously, so bemenu's first render re-requested the full
+        # output width and the menu spanned the whole screen.
+        bemenu = pkgs.bemenu.overrideAttrs (old: {
+          patches = (old.patches or [ ]) ++ [ ./kwm/bemenu-async-width.patch ];
+        });
+
         # bemenu-run keeps no history, so the launcher is this wrapper
         # (carried over from dwl.nix): recently run commands first, then every
         # other executable on PATH. History holds the last 50 distinct entries.
@@ -20,7 +28,7 @@
               IFS=:
               # shellcheck disable=SC2086
               find -L $PATH -maxdepth 1 -type f -executable -printf '%f\n' 2>/dev/null | sort -u
-            } | awk 'NF && !seen[$0]++' | ${pkgs.bemenu}/bin/bemenu "$@"
+            } | awk 'NF && !seen[$0]++' | ${bemenu}/bin/bemenu "$@"
           ) || exit
           [ -n "$sel" ] || exit
 
