@@ -87,7 +87,7 @@
 
         programs.river-next = {
           enable = true;
-          windowManagers = [ "kwm" "argen" ];
+          windowManagers = [ "kwm" "argen" "gliver" ];
           windowManagerOverrides = { inherit kwm; };
         };
       };
