@@ -46,6 +46,9 @@
             # $XDG_RUNTIME_DIR/dwl-kblayout on change, for waybar's
             # custom/kblayout module (waybar.nix).
             ./dwl/kblayout.patch
+            # pertag (own patch, after dwm's): each tag remembers its own
+            # layout, nmaster and mfact; viewing all tags uses a shared slot.
+            ./dwl/pertag.patch
           ];
           postPatch = (old.postPatch or "") + ''
             sed -i \

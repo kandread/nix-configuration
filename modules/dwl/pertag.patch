@@ -1,0 +1,161 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -219,6 +219,7 @@
+ 	void (*arrange)(Monitor *);
+ } Layout;
+ 
++typedef struct Pertag Pertag;
+ struct Monitor {
+ 	struct wl_list link;
+ 	struct wl_list dwl_ipc_outputs;
+@@ -242,6 +243,7 @@
+ 	int nmaster;
+ 	char ltsymbol[16];
+ 	int asleep;
++	Pertag *pertag;
+ };
+ 
+ typedef struct {
+@@ -349,6 +351,8 @@
+ static void gpureset(struct wl_listener *listener, void *data);
+ static void handlesig(int signo);
+ static void incnmaster(const Arg *arg);
++static void pertagsync(Monitor *m);
++static void pertagsave(Monitor *m);
+ static void inputdevice(struct wl_listener *listener, void *data);
+ static const Key *keybinding(uint32_t mods, xkb_keysym_t sym);
+ static void keypress(struct wl_listener *listener, void *data);
+@@ -548,6 +552,15 @@
+ /* configuration, allows nested code to access above variables */
+ #include "config.h"
+ 
++/* Per-tag layout state; index 0 is the "all tags" view */
++struct Pertag {
++	unsigned int curtag;
++	int nmasters[TAGCOUNT + 1];
++	float mfacts[TAGCOUNT + 1];
++	unsigned int sellts[TAGCOUNT + 1];
++	const Layout *ltidxs[TAGCOUNT + 1][2];
++};
++
+ /* attempt to encapsulate suck into one file */
+ #include "client.h"
+ 
+@@ -914,6 +927,7 @@
+ 			wlr_layer_surface_v1_destroy(l->layer_surface);
+ 	}
+ 
++	free(m->pertag);
+ 	wl_list_remove(&m->destroy.link);
+ 	wl_list_remove(&m->frame.link);
+ 	wl_list_remove(&m->link);
+@@ -1258,6 +1272,16 @@
+ 		}
+ 	}
+ 
++	m->pertag = ecalloc(1, sizeof(*m->pertag));
++	m->pertag->curtag = 1;
++	for (i = 0; i <= TAGCOUNT; i++) {
++		m->pertag->nmasters[i] = m->nmaster;
++		m->pertag->mfacts[i] = m->mfact;
++		m->pertag->ltidxs[i][0] = m->lt[0];
++		m->pertag->ltidxs[i][1] = m->lt[1];
++		m->pertag->sellts[i] = m->sellt;
++	}
++
+ 	/* The mode is a tuple of (width, height, refresh rate), and each
+ 	 * monitor supports only a specific set of modes. We just pick the
+ 	 * monitor's preferred mode; a more sophisticated compositor would let
+@@ -1756,6 +1780,7 @@
+ 		monitor->sellt ^= 1;
+ 
+ 	monitor->lt[monitor->sellt] = &layouts[index];
++	pertagsave(monitor);
+ 	arrange(monitor);
+ 	printstatus();
+ }
+@@ -1778,6 +1803,7 @@
+ 		monitor->seltags ^= 1;
+ 
+ 	monitor->tagset[monitor->seltags] = newtags;
++	pertagsync(monitor);
+ 	if (selmon == monitor)
+ 		focusclient(focustop(monitor), 1);
+ 	arrange(monitor);
+@@ -1978,9 +2004,44 @@
+ 	if (!arg || !selmon)
+ 		return;
+ 	selmon->nmaster = MAX(selmon->nmaster + arg->i, 0);
++	pertagsave(selmon);
+ 	arrange(selmon);
+ }
+ 
++/* Save the monitor's layout state into the current tag's slot */
++void
++pertagsave(Monitor *m)
++{
++	Pertag *pt = m->pertag;
++
++	pt->nmasters[pt->curtag] = m->nmaster;
++	pt->mfacts[pt->curtag] = m->mfact;
++	pt->sellts[pt->curtag] = m->sellt;
++	pt->ltidxs[pt->curtag][m->sellt] = m->lt[m->sellt];
++}
++
++/* After a tagset change: pick the matching tag slot and load its state */
++void
++pertagsync(Monitor *m)
++{
++	Pertag *pt = m->pertag;
++	uint32_t ts = m->tagset[m->seltags] & TAGMASK;
++	unsigned int i;
++
++	if (ts == TAGMASK) {
++		pt->curtag = 0;
++	} else if (pt->curtag == 0 || !(ts & (1u << (pt->curtag - 1)))) {
++		for (i = 0; i < TAGCOUNT && !(ts & (1u << i)); i++);
++		pt->curtag = i + 1;
++	}
++	m->nmaster = pt->nmasters[pt->curtag];
++	m->mfact = pt->mfacts[pt->curtag];
++	m->sellt = pt->sellts[pt->curtag];
++	m->lt[m->sellt] = pt->ltidxs[pt->curtag][m->sellt];
++	m->lt[m->sellt ^ 1] = pt->ltidxs[pt->curtag][m->sellt ^ 1];
++	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, LENGTH(m->ltsymbol));
++}
++
+ void
+ inputdevice(struct wl_listener *listener, void *data)
+ {
+@@ -3006,6 +3067,7 @@
+ 		selmon->sellt ^= 1;
+ 	if (arg && arg->v)
+ 		selmon->lt[selmon->sellt] = (Layout *)arg->v;
++	pertagsave(selmon);
+ 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, LENGTH(selmon->ltsymbol));
+ 	arrange(selmon);
+ 	printstatus();
+@@ -3023,6 +3085,7 @@
+ 	if (f < 0.1 || f > 0.9)
+ 		return;
+ 	selmon->mfact = f;
++	pertagsave(selmon);
+ 	arrange(selmon);
+ }
+ 
+@@ -3765,6 +3828,7 @@
+ 		return;
+ 
+ 	selmon->tagset[selmon->seltags] = newtagset;
++	pertagsync(selmon);
+ 	focusclient(focustop(selmon), 1);
+ 	arrange(selmon);
+ 	printstatus();
+@@ -3992,6 +4056,7 @@
+ 	selmon->seltags ^= 1; /* toggle sel tagset */
+ 	if (arg->ui & TAGMASK)
+ 		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
++	pertagsync(selmon);
+ 	focusclient(focustop(selmon), 1);
+ 	arrange(selmon);
+ 	printstatus();
