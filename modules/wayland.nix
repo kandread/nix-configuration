@@ -44,6 +44,10 @@
         };
       };
 
+      # Notification daemon. A graphical-session.target user unit, so it
+      # starts with any session that brings that target up; stylix themes it.
+      services.mako.enable = true;
+
       # kanshi matches a profile only when it accounts for *exactly* the
       # connected outputs: every output in the profile must be present, and
       # every connected output must be claimed by the profile. So one profile
