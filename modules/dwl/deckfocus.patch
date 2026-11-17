@@ -1,0 +1,204 @@
+Deck focus (Super+g focusmaster): in the deck layout Super+j/k cycle within the
+master area or the stack (wrapping) instead of the whole client list; Super+g
+focuses the first master, and from the master area returns to the stack card used
+last. The layout symbol shows the shown card as [D pos/count]. Applies after deck.patch.
+
+--- a/dwl.c
++++ b/dwl.c
+@@ -346,6 +346,7 @@
+ static void focusclient(Client *c, int lift);
+ static void focusmon(const Arg *arg);
+ static void focusstack(const Arg *arg);
++static void focusmaster(const Arg *arg);
+ static Client *focustop(Monitor *m);
+ static void fullscreennotify(struct wl_listener *listener, void *data);
+ static void gpureset(struct wl_listener *listener, void *data);
+@@ -413,6 +414,11 @@
+ static Client *termforwin(Client *c);
+ static void tile(Monitor *m);
+ static void deck(Monitor *m);
++static int tiledpos(Monitor *m, Client *t, int *total);
++static Client *tiledat(Monitor *m, int idx);
++static Client *deckcardfor(Monitor *m);
++static void deckfocused(Client *c);
++static void decksymbol(Monitor *m, Client *top);
+ static void togglebar(const Arg *arg);
+ static void togglefloating(const Arg *arg);
+ static void togglesticky(const Arg *arg);
+@@ -1855,6 +1861,7 @@
+ 		selmon = c->mon;
+ 		c->isurgent = 0;
+ 		c->opacity = c->opacity_focus;
++		deckfocused(c);
+ 
+ 		/* Don't change border color if there is an exclusive focus or we are
+ 		 * handling a drag operation */
+@@ -1924,6 +1931,20 @@
+ 	Client *c, *sel = focustop(selmon);
+ 	if (!sel || (sel->isfullscreen && !client_has_children(sel)))
+ 		return;
++	if (selmon->lt[selmon->sellt]->arrange == deck && !sel->isfloating) {
++		/* Deck: cycle within the group (master area or stack) of sel */
++		int pos, n, lo, hi;
++		pos = tiledpos(selmon, sel, &n);
++		if (pos >= 0 && n > selmon->nmaster) {
++			lo = pos < selmon->nmaster ? 0 : selmon->nmaster;
++			hi = pos < selmon->nmaster ? selmon->nmaster : n;
++			c = tiledat(selmon, lo + (pos - lo + (arg->i > 0 ? 1 : hi - lo - 1)) % (hi - lo));
++			if (c) {
++				focusclient(c, 1);
++				return;
++			}
++		}
++	}
+ 	if (arg->i > 0) {
+ 		wl_list_for_each(c, &sel->link, link) {
+ 			if (&c->link == &clients)
+@@ -1943,6 +1964,30 @@
+ 	focusclient(c, 1);
+ }
+ 
++void
++focusmaster(const Arg *arg)
++{
++	/* From the stack (or a floating window), focus the first master; from
++	 * the master area, go back to the stack card last focused. */
++	Client *sel, *t = NULL;
++	int pos, n;
++
++	if (!selmon)
++		return;
++	sel = focustop(selmon);
++	pos = sel ? tiledpos(selmon, sel, &n) : (tiledpos(selmon, NULL, &n), -1);
++	if (n == 0)
++		return;
++	if (pos >= 0 && pos < selmon->nmaster) {
++		if (n > selmon->nmaster && !(t = deckcardfor(selmon)))
++			t = tiledat(selmon, selmon->nmaster);
++	} else {
++		t = tiledat(selmon, 0);
++	}
++	if (t)
++		focusclient(t, 1);
++}
++
+ /* We probably should change the name of this: it sounds like it
+  * will focus the topmost client of this mon, when actually will
+  * only return that client */
+@@ -3584,7 +3629,7 @@
+ {
+ 	unsigned int my, slot;
+ 	int i, n = 0, ax, ay, aw, ah, mw, g = gappx;
+-	Client *c, *top = NULL, *foc;
++	Client *c, *top = NULL, *first = NULL, *foc;
+ 
+ 	wl_list_for_each(c, &clients, link)
+ 		if (VISIBLEON(c, m) && !c->isfloating && !c->isfullscreen)
+@@ -3617,17 +3662,94 @@
+ 			/* every stacked client shares one box; one is raised */
+ 			resize(c, (struct wlr_box){.x = ax + mw + (m->nmaster ? g / 2 : 0), .y = ay,
+ 				.width = aw - mw - (m->nmaster ? g / 2 : 0), .height = ah}, 0);
+-			if (!top || c == foc)
++			if (!first)
++				first = c;
++			if (c == foc)
+ 				top = c;
+ 		}
+ 		i++;
+ 	}
+-	if (n > m->nmaster)
+-		snprintf(m->ltsymbol, LENGTH(m->ltsymbol), "[D%d]", n - m->nmaster);
++	/* focus on a master keeps showing the stack card used last */
++	if (!top && !(top = deckcardfor(m)))
++		top = first;
++	decksymbol(m, top);
+ 	if (top)
+ 		wlr_scene_node_raise_to_top(&top->scene->node);
+ }
+ 
++/* Index of t among m's tiled clients in tiling order (-1 if it is not
++ * one); *total gets the number of tiled clients. */
++int
++tiledpos(Monitor *m, Client *t, int *total)
++{
++	Client *c;
++	int i = 0, pos = -1;
++
++	wl_list_for_each(c, &clients, link) {
++		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
++			continue;
++		if (c == t)
++			pos = i;
++		i++;
++	}
++	*total = i;
++	return pos;
++}
++
++Client *
++tiledat(Monitor *m, int idx)
++{
++	Client *c;
++	int i = 0;
++
++	wl_list_for_each(c, &clients, link) {
++		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
++			continue;
++		if (i++ == idx)
++			return c;
++	}
++	return NULL;
++}
++
++/* The stack card focused last, if it is still a stack card on m */
++static Client *deckcard;
++
++Client *
++deckcardfor(Monitor *m)
++{
++	int n;
++
++	if (deckcard && tiledpos(m, deckcard, &n) >= m->nmaster)
++		return deckcard;
++	return NULL;
++}
++
++void
++deckfocused(Client *c)
++{
++	Monitor *m = c->mon;
++	int n;
++
++	if (!m || m->lt[m->sellt]->arrange != deck)
++		return;
++	if (tiledpos(m, c, &n) >= m->nmaster) {
++		deckcard = c;
++		decksymbol(m, c);
++	}
++}
++
++/* Layout symbol "[D pos/count]": position of the shown card in the stack */
++void
++decksymbol(Monitor *m, Client *top)
++{
++	int n, pos;
++
++	if (!top || (pos = tiledpos(m, top, &n)) < m->nmaster || n <= m->nmaster)
++		return;
++	snprintf(m->ltsymbol, LENGTH(m->ltsymbol), "[D %d/%d]",
++			pos - m->nmaster + 1, n - m->nmaster);
++}
++
+ Client *
+ termforwin(Client *c)
+ {
+--- a/config.def.h
++++ b/config.def.h
+@@ -139,6 +139,7 @@
+ 	{ MODKEY,                    XKB_KEY_b,           togglebar,        {0} },
+ 	{ MODKEY,                    XKB_KEY_j,           focusstack,       {.i = +1} },
+ 	{ MODKEY,                    XKB_KEY_k,           focusstack,       {.i = -1} },
++	{ MODKEY,                    XKB_KEY_g,           focusmaster,      {0} },
+ 	{ MODKEY,                    XKB_KEY_i,           incnmaster,       {.i = +1} },
+ 	{ MODKEY,                    XKB_KEY_d,           incnmaster,       {.i = -1} },
+ 	{ MODKEY,                    XKB_KEY_h,           setmfact,         {.f = -0.05f} },

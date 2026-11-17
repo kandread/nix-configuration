@@ -8,10 +8,10 @@
         # catch-all monitor rule). Patching in place avoids carrying a
         # full config.h copy that would go stale on dwl updates.
         dwl = pkgs.dwl.overrideAttrs (old: {
-          # client-opacity-focus, ported to 0.9 (upstream's patch targets a
-          # different base). Super+Ctrl+j/k adjust unfocused opacity,
-          # Super+Ctrl+Shift+J/K the focused one. gaps is our own small patch
-          # (gappx in config.def.h, default 8).
+          # client-opacity-focus, ported to 0.9, is kept only because later
+          # patches are written against it; the postPatch below neutralises
+          # it (unfocused opacity 1.0, keybindings removed). gaps is our own
+          # small patch (gappx in config.def.h, default 8).
           patches = (old.patches or [ ]) ++ [
             # dwl-ipc-unstable-v2 for waybar's dwl modules (dwl-patches, v0.9). Listed first
             # (verified to apply in this order; the rest apply with offsets).
@@ -49,11 +49,19 @@
             # pertag (own patch, after dwm's): each tag remembers its own
             # layout, nmaster and mfact; viewing all tags uses a shared slot.
             ./dwl/pertag.patch
+            # deckfocus (own patch, after deck): in [D] Super+j/k cycle within the
+            # master area or the stack, Super+g focuses the master (and back to
+            # the last stack card), and the symbol reads [D pos/count].
+            ./dwl/deckfocus.patch
           ];
           postPatch = (old.postPatch or "") + ''
             sed -i \
               -e 's/^#define MODKEY .*/#define MODKEY WLR_MODIFIER_LOGO/' \
               -e 's/natural_scrolling = 0;/natural_scrolling = 1;/' \
+              -e 's/default_opacity_unfocus = [0-9.]*f/default_opacity_unfocus = 1.00f/' \
+              -e 's/1\.00,         0\.20,/1.00,         1.00,/' \
+              -e '/setopacity\(un\)\?focus/d' \
+              -e 's/borderpx *= 1;/borderpx = 3;/' \
               -e '/^\t{ "foot", /a\\t{ "mpv",              NULL,       0,            1,           0,       0,          1.00,         1.00,           -1 },\n\t{ "zoom",             "Meeting",  0,            1,           0,       0,          1.00,         1.00,           -1 },' \
               -e 's/{ NULL,       0.55f, 1,      1, /{ NULL,       0.55f, 1,      1.5f,/' \
               -e 's/XKB_KEY_s, \( *\)swapfocus,/XKB_KEY_BackSpace, swapfocus,/' \
