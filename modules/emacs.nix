@@ -15,6 +15,7 @@
           epkgs.mu4e
           epkgs.vterm
           epkgs.treesit-grammars.with-all-grammars
+          epkgs.texpresso
         ];
       };
     };

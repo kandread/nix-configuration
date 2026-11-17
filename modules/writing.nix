@@ -6,6 +6,7 @@
         pandoc
         texliveFull
         texlab
+        texpresso
         typst
         tinymist
         math-preview
