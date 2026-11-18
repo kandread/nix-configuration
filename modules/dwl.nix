@@ -53,6 +53,10 @@
             # master area or the stack, Super+g focuses the master (and back to
             # the last stack card), and the symbol reads [D pos/count].
             ./dwl/deckfocus.patch
+            # focusurgent (dwl-patches' focusonurgent, rewritten for the ipc
+            # patch's printstatus): an activation/urgency request switches to
+            # the client's tags and focuses it instead of marking it urgent.
+            ./dwl/focusurgent.patch
           ];
           postPatch = (old.postPatch or "") + ''
             sed -i \

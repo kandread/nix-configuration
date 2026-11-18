@@ -1,0 +1,61 @@
+Focus on urgent: when a client requests activation (xdg-activation or X11 urgency hint), switch to its tags and focus it instead of just marking it urgent. Applies after deckfocus.
+
+--- a/dwl.c
++++ b/dwl.c
+@@ -435,6 +435,7 @@
+ static void updatemons(struct wl_listener *listener, void *data);
+ static void updatetitle(struct wl_listener *listener, void *data);
+ static void urgent(struct wl_listener *listener, void *data);
++static void focusurgent(Client *c);
+ static void view(const Arg *arg);
+ static void virtualkeyboard(struct wl_listener *listener, void *data);
+ static void virtualpointer(struct wl_listener *listener, void *data);
+@@ -4155,6 +4156,17 @@
+ }
+ 
+ void
++focusurgent(Client *c)
++{
++	/* Instead of marking the client urgent, switch to its tags and focus it */
++	if (!c->mon)
++		return;
++	selmon = c->mon;
++	view(&(Arg){.ui = c->tags});
++	focusclient(c, 1);
++}
++
++void
+ urgent(struct wl_listener *listener, void *data)
+ {
+ 	struct wlr_xdg_activation_v1_request_activate_event *event = data;
+@@ -4163,11 +4175,7 @@
+ 	if (!c || c == focustop(selmon))
+ 		return;
+ 
+-	c->isurgent = 1;
+-	printstatus();
+-
+-	if (client_surface(c)->mapped)
+-		client_set_border_color(c, urgentcolor);
++	focusurgent(c);
+ }
+ 
+ void
+@@ -4367,15 +4375,11 @@
+ sethints(struct wl_listener *listener, void *data)
+ {
+ 	Client *c = wl_container_of(listener, c, set_hints);
+-	struct wlr_surface *surface = client_surface(c);
+ 	if (c == focustop(selmon) || !c->surface.xwayland->hints)
+ 		return;
+ 
+-	c->isurgent = xcb_icccm_wm_hints_get_urgency(c->surface.xwayland->hints);
+-	printstatus();
+-
+-	if (c->isurgent && surface && surface->mapped)
+-		client_set_border_color(c, urgentcolor);
++	if (xcb_icccm_wm_hints_get_urgency(c->surface.xwayland->hints))
++		focusurgent(c);
+ }
+ 
+ void
